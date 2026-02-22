@@ -9,5 +9,4 @@ Desenvolvi uma blockchain do zero em Go, com uma API REST e uma interface web si
 • Integrar backend + frontend em uma aplicação funcional
 
 O objetivo é combater fraudes em certificados e diplomas, criando uma prova criptográfica de autenticidade que qualquer pessoa pode verificar.
-Esse projeto faz parte de uma jornada maior: construir uma blockchain própria, evoluir para rede P2P, tokens, Proof of Stake e, no futuro, integrar IA para segurança e validação inteligente de transações.
-Mais do que o código em si, esse projeto me mostrou que é possível transformar ideias em sistemas reais, passo a passo.
+
