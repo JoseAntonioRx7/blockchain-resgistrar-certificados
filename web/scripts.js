@@ -52,3 +52,30 @@ async function verifyCertificate() {
         resultDiv.innerText = "Erro ao consultar servidor.";
     }
 }
+
+async function loadDashboard() {
+    const tbody = document.getElementById('dashboardBody');
+    
+    try {
+        const response = await fetch('/list');
+        const certs = await response.json();
+
+        tbody.innerHTML = ""; // Limpa a tabela
+
+        certs.forEach(cert => {
+            const row = `
+                <tr>
+                    <td>${cert.student_name}</td>
+                    <td>${cert.course}</td>
+                    <td style="font-size: 10px;">${cert.file_hash}</td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    } catch (err) {
+        console.error("Erro ao carregar dashboard:", err);
+    }
+}
+
+// Carrega automaticamente ao abrir a página
+window.onload = loadDashboard;

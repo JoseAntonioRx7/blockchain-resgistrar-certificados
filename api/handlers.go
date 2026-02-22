@@ -66,3 +66,17 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		"error": "Certificado não encontrado",
 	})
 }
+
+func ListCertificatesHandler(w http.ResponseWriter, r *http.Request){
+	var allCerts []blockchain.CertificateTransaction
+
+    // Percorre todos os blocos (pulando o gênese se quiser)
+    for _, block := range Chain.Blocks {
+        for _, tx := range block.Transactions {
+            allCerts = append(allCerts, tx)
+        }
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(allCerts)
+}
