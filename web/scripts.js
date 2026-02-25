@@ -140,6 +140,7 @@ function filterTable() {
 window.onload = loadDashboard;
 
 async function loadDashboard() {
+    document.getElementById("countCerts").innerText = certs.length; // Atualiza o contador
     const tbody = document.getElementById('dashboardBody');
     try {
         const response = await fetch('/list');
