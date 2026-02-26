@@ -5,18 +5,19 @@ import (
 	"cert-chain/blockchain"
 	"fmt"
 	"net/http"
+	"cert-chain/database"
 )
 
 func main() {
-	// Em vez de NewBlockchain, usamos LoadBlockchain
-	// Isso garante que os dados antigos apareçam na inicialização
-	api.Chain = blockchain.LoadBlockchain()
+	// 1. INICIA O BANCO DE DADOS PRIMEIRO
+	database.InitDB()
 
+	// 2. Carrega a Blockchain (O código que já fizemos)
+	api.Chain = blockchain.LoadBlockchain()
 	fmt.Println("Blockchain funcionando!")
 	
 	api.RegisterRoutes()
 	
-	// Serve o frontend
 	fs := http.FileServer(http.Dir("./web"))
 	http.Handle("/", fs)
 
