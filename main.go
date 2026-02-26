@@ -12,7 +12,7 @@ func main() {
 	// Isso garante que os dados antigos apareçam na inicialização
 	api.Chain = blockchain.LoadBlockchain()
 
-	fmt.Println("Blockchain carregada e persistente!")
+	fmt.Println("Blockchain funcionando!")
 	
 	api.RegisterRoutes()
 	
