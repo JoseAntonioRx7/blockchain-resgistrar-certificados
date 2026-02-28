@@ -4,45 +4,34 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+
 	_ "github.com/lib/pq"
 )
 
+// Apenas UMA variável global, com letra maiúscula para ser exportada
 var DB *sql.DB
-func Connect(dsn string) {
-	var err error
-	DB, err = sql.Open("postgres", dsn)
-	if err != nil {
-		log.Fatal("Erro ao conectar ao banco de dados: ", err)
-	}
-}
-
-var db *sql.DB
 
 func InitDB() {
 	connStr := "host=localhost port=5432 user=postgres password=tedcrypto1239 dbname=cert_chain sslmode=disable"
 
-	// 2. Prepara a conexão
 	var err error
-	db, err = sql.Open("postgres", connStr)
+	// Atribuímos a conexão diretamente à variável global DB (maiúscula)
+	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("Erro ao preparar o banco: ", err)
 	}
 
-	// 3. O "Ping" é o que realmente bate na porta do banco para testar a senha
-	err = db.Ping()
+	err = DB.Ping()
 	if err != nil {
 		log.Fatal("Erro ao conectar no banco (Senha errada ou banco offline): ", err)
 	}
 
 	fmt.Println("Banco de Dados conectado com sucesso!")
 
-	// 4. Chama o algoritmo de criação da tabela
 	createTable()
 }
 
-// Algoritmo 2: Estruturar os Dados
 func createTable() {
-	// Este é o comando SQL. "IF NOT EXISTS" impede que dê erro se a tabela já existir.
 	query := `
 	CREATE TABLE IF NOT EXISTS certificates (
 		id VARCHAR(64) PRIMARY KEY,
@@ -53,11 +42,9 @@ func createTable() {
 		timestamp BIGINT NOT NULL
 	);`
 
-	// O 'Exec' apenas executa o comando SQL sem esperar uma resposta de dados de volta
-	_, err := db.Exec(query)
+	_, err := DB.Exec(query)
 	if err != nil {
 		log.Fatal("Erro ao criar a tabela: ", err)
 	}
-	fmt.Println("Tabela 'certificates' pronta para receber dados!")
+	fmt.Println("✅ Tabela 'certificates' pronta para receber dados!")
 }
-

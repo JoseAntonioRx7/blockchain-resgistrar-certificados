@@ -1,12 +1,12 @@
 package api
 
 import (
+	"encoding/json"
+	"net/http"
+	"time"
 	"cert-chain/blockchain"
 	"cert-chain/database"
 	"cert-chain/utils"
-	"encoding/json"	
-	"net/http"
-	"time"
 )
 
 var Chain *blockchain.Blockchain
@@ -25,18 +25,14 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
+	// Gera o Hash uma única vez (removemos a duplicata)
 	hash, err := utils.HashFile(file)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	hash, err = utils.HashFile(file)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+	// Cria o objeto de transação
 	tx := blockchain.CertificateTransaction{
 		ID:          utils.GenerateID(),
 		StudentName: r.FormValue("student_name"),
@@ -46,29 +42,25 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		Timestamp:   time.Now().Unix(),
 	}
 
-	// 1. Defina o comando SQL com placeholders
+	// Salva no banco de dados
 	query := `INSERT INTO certificates (id, student_name, institution, course, file_hash, timestamp) 
-		  VALUES ($1, $2, $3, $4, $5, $6)`
+	          VALUES ($1, $2, $3, $4, $5, $6)`
 
-	// 2. Execute a query passando os dados do seu objeto 'tx' (CertificateTransaction)
-	// O banco de dados valida os tipos automaticamente
 	_, err = database.DB.Exec(query, tx.ID, tx.StudentName, tx.Institution, tx.Course, tx.FileHash, tx.Timestamp)
-
-	// 3. Tratamento de erro profissional: Se falhar aqui, o registro não prossegue
 	if err != nil {
-		// Retorna erro 500 para o frontend entender que algo falhou
 		http.Error(w, "Erro ao salvar no banco de dados", http.StatusInternalServerError)
 		return
 	}
 
+	// Adiciona na Blockchain
 	Chain.AddBlock([]blockchain.CertificateTransaction{tx})
 
+	// Retorna sucesso
 	resp := map[string]interface{}{
 		"message": "Certificado registrado com sucesso",
 		"hash":    hash,
 		"id":      tx.ID,
 	}
-
 	json.NewEncoder(w).Encode(resp)
 }
 
@@ -92,7 +84,6 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 func ListCertificatesHandler(w http.ResponseWriter, r *http.Request) {
 	var allCerts []blockchain.CertificateTransaction
 
-	// Percorre todos os blocos (pulando o gênese se quiser)
 	for _, block := range Chain.Blocks {
 		for _, tx := range block.Transactions {
 			allCerts = append(allCerts, tx)
