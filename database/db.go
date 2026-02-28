@@ -46,5 +46,5 @@ func createTable() {
 	if err != nil {
 		log.Fatal("Erro ao criar a tabela: ", err)
 	}
-	fmt.Println("✅ Tabela 'certificates' pronta para receber dados!")
+	fmt.Println("Tabela 'certificates' pronta para receber dados!")
 }
