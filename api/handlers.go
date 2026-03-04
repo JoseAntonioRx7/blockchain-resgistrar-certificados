@@ -48,10 +48,19 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Salva no banco de dados
-	query := `INSERT INTO certificates (id, student_name, institution, course, file_hash, timestamp) 
-	          VALUES ($1, $2, $3, $4, $5, $6)`
+	query := `INSERT INTO certificates (id, student_name, institution, course, file_hash, signature, timestamp) 
+	          VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
-	_, err = database.DB.Exec(query, tx.ID, tx.StudentName, tx.Institution, tx.Course, tx.FileHash, tx.Timestamp)
+	_, err = database.DB.Exec(query, 
+		tx.ID, 
+		tx.StudentName, 
+		tx.Institution, 
+		tx.Course, tx.FileHash, 
+		tx.Signature, 
+		tx.Timestamp, 
+	)
+
+
 	if err != nil {
 		http.Error(w, "Erro ao salvar no banco de dados", http.StatusInternalServerError)
 		return
