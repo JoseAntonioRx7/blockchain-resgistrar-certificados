@@ -1,12 +1,13 @@
 package api
 
 import (
-	"encoding/json"
-	"net/http"
-	"time"
 	"cert-chain/blockchain"
 	"cert-chain/database"
 	"cert-chain/utils"
+	"encoding/json"
+	"net/http"
+	"time"
+	"fmt"
 )
 
 var Chain *blockchain.Blockchain
@@ -32,14 +33,18 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hashBytes := []byte(hash)
+	signature := utils.SignData(utils.PrivateKey, hashBytes)
+
 	// Cria o objeto de transação
 	tx := blockchain.CertificateTransaction{
-		ID:          utils.GenerateID(),
-		StudentName: r.FormValue("student_name"),
-		Institution: r.FormValue("institution"),
-		Course:      r.FormValue("course"),
-		FileHash:    hash,
-		Timestamp:   time.Now().Unix(),
+		ID:          	utils.GenerateID(),
+		StudentName: 	r.FormValue("student_name"),
+		Institution: 	r.FormValue("institution"),
+		Course:      	r.FormValue("course"),
+		FileHash:    	hash,
+		Signature:		fmt.Sprintf("%x", signature), // Simulando assinatura (na prática, seria a assinatura digital da instituição)
+		Timestamp:   	time.Now().Unix(),
 	}
 
 	// Salva no banco de dados

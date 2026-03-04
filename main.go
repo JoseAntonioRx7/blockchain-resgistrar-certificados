@@ -3,12 +3,25 @@ package main
 import (
 	"cert-chain/api"
 	"cert-chain/blockchain"
-	"fmt"
-	"net/http"
 	"cert-chain/database"
+	"cert-chain/utils"
+	"net/http"
+	"fmt"
+	
 )
 
+
 func main() {
+
+	// Gerar chaves para a instituição
+	publicKey, privateKey, err := utils.GenerateInstitutionKeys()
+
+	if err != nil {
+		fmt.Printf("Erro ao gerar chaves: %v\n", err)
+	 }else{
+		fmt.Printf("Chaves geradas com sucesso!\nPublic Key: %x\nPrivate Key: %x\n", publicKey, privateKey)
+	 }
+
 	// 1. INICIA O BANCO DE DADOS PRIMEIRO
 	database.InitDB()
 
