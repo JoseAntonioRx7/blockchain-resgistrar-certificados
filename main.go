@@ -36,4 +36,9 @@ func main() {
 
 	fmt.Println("Servidor rodando em http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
+
+	err = http.ListenAndServe(":8080", nil)
+	if err != nil {
+		fmt.Printf("Erro ao iniciar o servidor: %v\n", err)
+	}
 }

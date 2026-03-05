@@ -1,188 +1,126 @@
-// Função para Registrar
-document.getElementById('registerForm').addEventListener('submit', async (e) => {
+const API_URL = 'http://localhost:8080';
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('registerForm').addEventListener('submit', registerCertificate);
+    loadDashboard();
+});
+
+async function registerCertificate(e) {
     e.preventDefault();
     const resultDiv = document.getElementById('registerResult');
-    resultDiv.innerText = "Minerando bloco... aguarde.";
+    resultDiv.innerHTML = "<strong>Minerando bloco...</strong> Isso pode levar alguns segundos devido ao PoW.";
 
     const formData = new FormData(e.target);
 
     try {
-        const response = await fetch('/register', {
-            method: 'POST',
-            body: formData
+        const response = await fetch(`${API_URL}/register`, { 
+            method: 'POST', 
+            body: formData 
         });
-
+        
         const data = await response.json();
+        
         if (response.ok) {
-            resultDiv.innerHTML = `<strong>Sucesso!</strong><br>ID: ${data.id}<br>Hash: ${data.hash}`;
+            resultDiv.innerHTML = `
+                <strong style="color: #10b981;">Sucesso!</strong><br>
+                ID: ${data.id}<br>
+                Hash: <small>${data.hash}</small>
+            `;
+            e.target.reset(); // Limpa o formulário
+            loadDashboard();  // Atualiza a tabela automaticamente
         } else {
             resultDiv.innerText = "Erro: " + (data.error || "Falha no registro");
         }
     } catch (err) {
-        resultDiv.innerText = "Erro ao conectar com o servidor.";
+        resultDiv.innerText = "Erro ao conectar com o servidor. Certifique-se que o backend está rodando em :8080";
+        console.error(err);
     }
-});
+}
 
-// Função para Verificar
 async function verifyCertificate() {
-    const hash = document.getElementById('hashInput').value;
+    const hash = document.getElementById('hashInput').value.trim();
     const resultDiv = document.getElementById('verifyResult');
-    
+
     if (!hash) {
         resultDiv.innerText = "Por favor, insira um hash.";
         return;
     }
 
     try {
-        // Corresponde ao r.URL.Query().Get("hash") do seu Go
-        const response = await fetch(`/verify?hash=${hash}`);
+        const response = await fetch(`${API_URL}/verify?hash=${encodeURIComponent(hash)}`);
         const data = await response.json();
-
+        
         if (response.ok && !data.error) {
+            // Ajustado para os nomes das propriedades JSON que o Go envia
             resultDiv.innerHTML = `
-                <strong>Certificado Válido!</strong><br>
-                Aluno: ${data.student_name}<br>
-                Instituição: ${data.institution}<br>
-                Data: ${new Date(data.timestamp * 1000).toLocaleDateString()}
+                <div style="border-left: 4px solid #10b981; padding-left: 10px;">
+                    <strong style="color: #10b981;">Certificado Autêntico!</strong><br>
+                    <strong>Aluno:</strong> ${data.student_name}<br>
+                    <strong>Instituição:</strong> ${data.institution}<br>
+                    <strong>Curso:</strong> ${data.course}<br>
+                    <strong>Data:</strong> ${new Date(data.timestamp * 1000).toLocaleString()}
+                </div>
             `;
         } else {
-            resultDiv.innerText = "Certificado não encontrado ou inválido.";
+            resultDiv.innerHTML = `<strong style="color: #ef4444;">Certificado não encontrado ou inválido na Blockchain.</strong>`;
         }
     } catch (err) {
         resultDiv.innerText = "Erro ao consultar servidor.";
+        console.error(err);
     }
 }
 
 async function loadDashboard() {
     const tbody = document.getElementById('dashboardBody');
-    
+    const counter = document.getElementById('countCerts');
+
     try {
-        const response = await fetch('/list');
+        const response = await fetch(`${API_URL}/list`);
         const certs = await response.json();
 
-        tbody.innerHTML = ""; // Limpa a tabela
-
-        certs.forEach(cert => {
-            const row = `
-                <tr>
-                    <td>${cert.student_name}</td>
-                    <td>${cert.course}</td>
-                    <td style="font-size: 10px;">${cert.file_hash}</td>
-                </tr>
-            `;
-            tbody.innerHTML += row;
-        });
-    } catch (err) {
-        console.error("Erro ao carregar dashboard:", err);
-    }
-}
-
-// Carrega automaticamente ao abrir a página
-window.onload = loadDashboard;
-
-
-// Função para buscar e carregar os dados (já tínhamos começado)
-async function loadDashboard() {
-    const tbody = document.getElementById('dashboardBody');
-    try {
-        const response = await fetch('/list');
-        const certs = await response.json();
-
-        tbody.innerHTML = ""; 
-
-        if (certs && certs.length > 0) {
+        tbody.innerHTML = "";
+        if (Array.isArray(certs) && certs.length > 0) {
             certs.forEach(cert => {
-                const date = new Date(cert.timestamp * 1000).toLocaleDateString();
+                const date = cert.timestamp ? new Date(cert.timestamp * 1000).toLocaleDateString() : 'N/A';
                 const row = `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px;"><strong>${cert.student_name}</strong></td>
-                        <td style="padding: 12px;">${cert.institution}</td>
-                        <td style="padding: 12px;">${cert.course}</td>
-                        <td style="padding: 12px;">${date}</td>
-                        <td style="padding: 12px;"><code style="font-size: 11px; color: #666;">${cert.file_hash.substring(0, 15)}...</code></td>
+                    <tr>
+                        <td><strong>${cert.student_name}</strong></td>
+                        <td>${cert.course} <br> <small>${cert.institution}</small></td>
+                        <td>${date}</td>
+                        <td><code title="${cert.file_hash}">${cert.file_hash.substring(0, 10)}...</code></td>
+                        <td>
+                            <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;" 
+                                onclick="copyHash('${cert.file_hash}')">Copiar Hash</button>
+                        </td>
                     </tr>
                 `;
-                tbody.innerHTML += row;
+                tbody.insertAdjacentHTML('beforeend', row);
             });
+            if (counter) counter.innerText = `(${certs.length})`;
         } else {
-            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px;'>Nenhum certificado encontrado.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;padding:20px;'>Nenhum certificado registrado na rede ainda.</td></tr>";
+            if (counter) counter.innerText = `(0)`;
         }
     } catch (err) {
         console.error("Erro ao carregar dashboard:", err);
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;color:red;'>Erro ao carregar dados do servidor.</td></tr>";
     }
 }
 
-// NOVA: Função de filtragem dinâmica
 function filterTable() {
     const input = document.getElementById("searchInput");
+    if (!input) return;
     const filter = input.value.toUpperCase();
-    const table = document.getElementById("certTable");
-    const tr = table.getElementsByTagName("tr");
+    const rows = document.getElementById("dashboardBody").getElementsByTagName("tr");
 
-    // Percorre todas as linhas da tabela (exceto o cabeçalho)
-    for (let i = 1; i < tr.length; i++) {
-        let visible = false;
-        const tds = tr[i].getElementsByTagName("td");
-        
-        // Testa se o filtro bate com o Aluno (coluna 0) ou Curso (coluna 2)
-        if (tds[0] || tds[2]) {
-            const nameText = tds[0].textContent || tds[0].innerText;
-            const courseText = tds[2].textContent || tds[2].innerText;
-            if (nameText.toUpperCase().indexOf(filter) > -1 || courseText.toUpperCase().indexOf(filter) > -1) {
-                visible = true;
-            }
-        }
-        tr[i].style.display = visible ? "" : "none";
-    }
-}
-
-// Garante que carrega ao iniciar
-window.onload = loadDashboard;
-
-async function loadDashboard() {
-    document.getElementById("countCerts").innerText = certs.length; // Atualiza o contador
-    const tbody = document.getElementById('dashboardBody');
-    try {
-        const response = await fetch('/list');
-        const certs = await response.json();
-        tbody.innerHTML = ""; 
-
-        certs.forEach(cert => {
-            const date = new Date(cert.timestamp * 1000).toLocaleDateString();
-            const row = `
-                <tr>
-                    <td>
-                        <div style="font-weight: 600;">${cert.student_name}</div>
-                        <div style="font-size: 0.75rem; color: #94a3b8;">ID: ${cert.id.substring(0,8)}</div>
-                    </td>
-                    <td>
-                        <div>${cert.course}</div>
-                        <div style="font-size: 0.8rem; color: #64748b;">${cert.institution}</div>
-                    </td>
-                    <td>${date}</td>
-                    <td>
-                        <button class="btn-verify" onclick="copyHash('${cert.file_hash}')">Copiar Hash</button>
-                    </td>
-                </tr>
-            `;
-            tbody.innerHTML += row;
-        });
-    } catch (err) {
-        console.error("Erro ao carregar:", err);
+    for (let row of rows) {
+        row.style.display = row.innerText.toUpperCase().includes(filter) ? "" : "none";
     }
 }
 
 function copyHash(hash) {
-    navigator.clipboard.writeText(hash);
-    alert("Hash copiado para a área de transferência! Use-o no campo de verificação.");
-}
-
-function filterTable() {
-    const input = document.getElementById("searchInput").value.toUpperCase();
-    const rows = document.getElementById("dashboardBody").getElementsByTagName("tr");
-
-    for (let row of rows) {
-        const text = row.innerText.toUpperCase();
-        row.style.display = text.includes(input) ? "" : "none";
-    }
+    if (!hash) return;
+    navigator.clipboard.writeText(hash).then(() => {
+        alert("Hash copiado com sucesso!");
+    });
 }

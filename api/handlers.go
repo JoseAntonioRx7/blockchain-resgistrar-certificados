@@ -5,14 +5,29 @@ import (
 	"cert-chain/database"
 	"cert-chain/utils"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
-	"fmt"
 )
 
 var Chain *blockchain.Blockchain
 
+// Função auxiliar para configurar CORS e evitar repetição
+func setupCORS(w *http.ResponseWriter, r *http.Request) bool {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	if r.Method == "OPTIONS" {
+		(*w).WriteHeader(http.StatusOK)
+		return true
+	}
+	return false
+}
+
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	if setupCORS(&w, r) { return }
+
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -26,7 +41,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// Gera o Hash uma única vez (removemos a duplicata)
 	hash, err := utils.HashFile(file)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -36,40 +50,38 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	hashBytes := []byte(hash)
 	signature := utils.SignData(utils.PrivateKey, hashBytes)
 
-	// Cria o objeto de transação
 	tx := blockchain.CertificateTransaction{
-		ID:          	utils.GenerateID(),
-		StudentName: 	r.FormValue("student_name"),
-		Institution: 	r.FormValue("institution"),
-		Course:      	r.FormValue("course"),
-		FileHash:    	hash,
-		Signature:		fmt.Sprintf("%x", signature), // Simulando assinatura (na prática, seria a assinatura digital da instituição)
-		Timestamp:   	time.Now().Unix(),
+		ID:           utils.GenerateID(),
+		StudentName:  r.FormValue("student_name"),
+		Institution:  r.FormValue("institution"),
+		Course:       r.FormValue("course"),
+		FileHash:     hash,
+		Signature:    fmt.Sprintf("%x", signature),
+		Timestamp:    time.Now().Unix(),
 	}
 
-	// Salva no banco de dados
 	query := `INSERT INTO certificates (id, student_name, institution, course, file_hash, signature, timestamp) 
-	          VALUES ($1, $2, $3, $4, $5, $6, $7)`
+              VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
 	_, err = database.DB.Exec(query, 
 		tx.ID, 
 		tx.StudentName, 
 		tx.Institution, 
-		tx.Course, tx.FileHash, 
+		tx.Course, 
+		tx.FileHash, 
 		tx.Signature, 
-		tx.Timestamp, 
+		tx.Timestamp,
 	)
-
 
 	if err != nil {
 		http.Error(w, "Erro ao salvar no banco de dados", http.StatusInternalServerError)
 		return
 	}
 
-	// Adiciona na Blockchain
+	// Adiciona na Blockchain e salva a persistência
 	Chain.AddBlock([]blockchain.CertificateTransaction{tx})
 
-	// Retorna sucesso
+	w.Header().Set("Content-Type", "application/json")
 	resp := map[string]interface{}{
 		"message": "Certificado registrado com sucesso",
 		"hash":    hash,
@@ -79,7 +91,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func VerifyHandler(w http.ResponseWriter, r *http.Request) {
+	if setupCORS(&w, r) { return }
+
 	hash := r.URL.Query().Get("hash")
+	w.Header().Set("Content-Type", "application/json")
 
 	for _, block := range Chain.Blocks {
 		for _, tx := range block.Transactions {
@@ -90,14 +105,16 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	w.WriteHeader(http.StatusNotFound)
 	json.NewEncoder(w).Encode(map[string]string{
 		"error": "Certificado nao encontrado",
 	})
 }
 
 func ListCertificatesHandler(w http.ResponseWriter, r *http.Request) {
-	var allCerts []blockchain.CertificateTransaction
+	if setupCORS(&w, r) { return }
 
+	var allCerts []blockchain.CertificateTransaction
 	for _, block := range Chain.Blocks {
 		for _, tx := range block.Transactions {
 			allCerts = append(allCerts, tx)
