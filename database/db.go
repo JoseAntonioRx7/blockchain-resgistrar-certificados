@@ -32,19 +32,36 @@ func InitDB() {
 }
 
 func createTable() {
-	query := `
+	queryCertificates := `
 	CREATE TABLE IF NOT EXISTS certificates (
 		id VARCHAR(64) PRIMARY KEY,
 		student_name VARCHAR(255) NOT NULL,
 		institution VARCHAR(255) NOT NULL,
 		course VARCHAR(255) NOT NULL,
 		file_hash TEXT UNIQUE NOT NULL,
+		signature TEXT,
 		timestamp BIGINT NOT NULL
 	);`
 
-	_, err := DB.Exec(query)
+	_, err := DB.Exec(queryCertificates)
 	if err != nil {
 		log.Fatal("Erro ao criar a tabela: ", err)
 	}
 	fmt.Println("Tabela 'certificates' pronta para receber dados!")
+
+	queryBlocks := `
+	CREATE TABLE IF NOT EXISTS blocks (
+		index INTEGER PRIMARY KEY,
+		timestamp BIGINT NOT NULL,
+		prev_hash TEXT NOT NULL,
+		hash TEXT NOT NULL,
+		nonce INTEGER NOT NULL,
+		transactions JSONB NOT NULL
+	);`
+
+	_, err = DB.Exec(queryBlocks)
+	if err != nil {
+		log.Fatal("Erro ao criar a tabela blocks: ", err)
+	}
+	fmt.Println("Tabela 'blocks' pronta para registrar a blockchain!")
 }

@@ -3,6 +3,7 @@ package blockchain
 import (
 	"cert-chain/database"
 	"encoding/json"
+	"encoding/hex"
 	"log"
 	"time"
 )
@@ -40,8 +41,8 @@ func SaveBlockToDB(b *Block) {
 	_, err = database.DB.Exec(query,
 		b.Index,
 		b.Timestamp,
-		b.PrevHash,
-		b.Hash,
+		hex.EncodeToString(b.PrevHash),
+		hex.EncodeToString(b.Hash),
 		b.Nonce,
 		string(txsJSON),
 	)
@@ -55,43 +56,43 @@ func SaveBlockToDB(b *Block) {
 
 // LoadBlockchain carrega todo o histórico de blocos do PostgreSQL
 func LoadBlockchain() *Blockchain {
-	chain := &Blockchain{}
+    chain := &Blockchain{}
 
-	query := `SELECT index, timestamp, prev_hash, hash, nonce, transactions FROM blocks ORDER BY index ASC`
-	rows, err := database.DB.Query(query)
+    query := `SELECT index, timestamp, prev_hash, hash, nonce, transactions FROM blocks ORDER BY index ASC`
+    rows, err := database.DB.Query(query)
 
-	if err != nil {
-		log.Fatal("Erro ao buscar blocos no banco: ", err)
-	}
-	defer rows.Close()
+    if err != nil {
+        log.Fatal("Erro ao buscar blocos no banco: ", err)
+    }
+    defer rows.Close()
 
-	for rows.Next() {
-		// Criamos um ponteiro para Block, exatamente como a sua struct exige
-		b := &Block{}
-		var txsJSON string
+    for rows.Next() {
+        // Criamos um ponteiro para Block, exatamente como a sua struct exige
+        b := &Block{}
+        var txsJSON string
 
-		err := rows.Scan(&b.Index, &b.Timestamp, &b.PrevHash, &b.Hash, &b.Nonce, &txsJSON)
-		if err != nil {
-			log.Fatal("Erro ao ler dados do bloco: ", err)
-		}
+        err := rows.Scan(&b.Index, &b.Timestamp, &b.PrevHash, &b.Hash, &b.Nonce, &txsJSON)
+        if err != nil {
+            log.Fatal("Erro ao ler dados do bloco: ", err)
+        }
 
-		// Remonta as transações
-		json.Unmarshal([]byte(txsJSON), &b.Transactions)
+        // Remonta as transações
+        json.Unmarshal([]byte(txsJSON), &b.Transactions)
 
-		chain.Blocks = append(chain.Blocks, b)
-	}
+        chain.Blocks = append(chain.Blocks, b)
+    }
 
-	// Inteligência de inicialização: Se o banco estiver vazio, cria o Gênese
-	if len(chain.Blocks) == 0 {
-		log.Println("Nenhum bloco encontrado. Criando Bloco Genese no Postgres")
-		genesisBlock := CreateGenesisBlock()
-		chain.Blocks = append(chain.Blocks, genesisBlock)
-		SaveBlockToDB(genesisBlock)
-	} else {
-		log.Printf("Blockchain funcionando com sucesso! Total de blocos: %d\n", len(chain.Blocks))
-	}
+    // Inteligência de inicialização: Se o banco estiver vazio, cria o Gênese
+    if len(chain.Blocks) == 0 {
+        log.Println("Nenhum bloco encontrado. Criando Bloco Genese no Postgres")
+        genesisBlock := CreateGenesisBlock()
+        chain.Blocks = append(chain.Blocks, genesisBlock)
+        SaveBlockToDB(genesisBlock)
+    } else {
+        log.Printf("Blockchain funcionando com sucesso! Total de blocos: %d\n", len(chain.Blocks))
+    }
 
-	return chain
+    return chain
 }
 
 // AddBlock adiciona um bloco e salva no PostgreSQL automaticamente
