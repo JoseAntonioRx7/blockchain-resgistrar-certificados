@@ -12,6 +12,7 @@ type Block struct {
 	PrevHash     []byte
 	Hash         []byte
 	Nonce        int
+	Index        int
 }
 
 func (b *Block) calculateHash() []byte {

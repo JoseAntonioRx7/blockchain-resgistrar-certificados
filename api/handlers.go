@@ -21,7 +21,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "Arquivo inválido", http.StatusBadRequest)
+		http.Error(w, "Arquivo invalido", http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
@@ -91,7 +91,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(map[string]string{
-		"error": "Certificado não encontrado",
+		"error": "Certificado nao encontrado",
 	})
 }
 
