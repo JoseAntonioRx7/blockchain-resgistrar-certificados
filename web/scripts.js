@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function registerCertificate(e) {
     e.preventDefault();
     const resultDiv = document.getElementById('registerResult');
-    resultDiv.innerHTML = "<strong>Minerando bloco...</strong> Isso pode levar alguns segundos devido ao PoW.";
+    resultDiv.innerHTML = "<strong>Minerando bloco...</strong> Isso pode levar alguns minutos devido ao PoW.";
 
     const formData = new FormData(e.target);
 
