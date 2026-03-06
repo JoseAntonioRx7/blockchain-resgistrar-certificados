@@ -453,7 +453,7 @@ MIT License - Sinta-se livre para usar e contribuir!
 
 Dúvidas ou sugestões? Entre em contato!
 
-**GitHub Issues**: [cert-chain/issues](https://github.com/seu-usuario/cert-chain/issues)
+**GitHub**: https://github.com/JoseAntonioRx7
 
 ---
 
