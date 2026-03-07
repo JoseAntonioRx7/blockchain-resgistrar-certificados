@@ -4,6 +4,8 @@ import(
 	"cert-chain/utils"
 	"net/http"
 	"strings"
+	"context"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // JWTMiddleware "envolve" outra função HTTP
@@ -47,5 +49,20 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// 4. Se chegou até aqui, o crachá é válido!
 		// Chama a próxima função (que será o nosso RegisterHandler)
 		next(w, r)
+
+		// 1. Extrai as informações (Claims) de dentro do token
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+    // 2. Pega o username que salvamos na hora do login
+    username := claims["username"].(string)
+    
+    // 3. Cria uma "mochila" (Context) na requisição e coloca o username dentro
+    ctx := context.WithValue(r.Context(), "username", username)
+    
+    // 4. Passa a requisição adiante, agora carregando essa mochila
+    next(w, r.WithContext(ctx))
+	} else {
+    http.Error(w, "Token invalido", http.StatusUnauthorized)
+    return
+}
 	}
 }

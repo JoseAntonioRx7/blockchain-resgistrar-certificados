@@ -12,9 +12,7 @@ import (
 
 var Chain *blockchain.Blockchain
 
-// Placeholder para teste - No próximo passo, buscaremos isso do Postgres baseado no Login
-const TEMP_PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000000"
-
+// Função auxiliar para configurar CORS e Headers de Autorização
 func setupCORS(w *http.ResponseWriter, r *http.Request) bool {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
@@ -30,6 +28,14 @@ func setupCORS(w *http.ResponseWriter, r *http.Request) bool {
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if setupCORS(&w, r) { return }
 
+	// 1. Obtém o username do contexto (injetado pelo JWTMiddleware)
+	usernameCtx := r.Context().Value("username")
+	if usernameCtx == nil {
+		http.Error(w, "Erro de autenticação: usuário não identificado", http.StatusUnauthorized)
+		return
+	}
+	username := usernameCtx.(string)
+
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -43,56 +49,64 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// 1. Gera o Hash do arquivo
+	// 2. Busca os dados reais da instituição no PostgreSQL
+	var privateKeyHex, institutionName string
+	queryDB := `SELECT private_key, name FROM institutions WHERE username = $1`
+	err = database.DB.QueryRow(queryDB, username).Scan(&privateKeyHex, &institutionName)
+	if err != nil {
+		http.Error(w, "Instituição não autorizada no banco de dados", http.StatusUnauthorized)
+		return
+	}
+
+	// 3. Gera o Hash do arquivo
 	hash, err := utils.HashFile(file)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 2. ASSINATURA DIGITAL (Corrigido para o novo utils/crypto.go)
-	// O SignData agora espera o hash em string e a chave privada em Hex
-	signature, err := utils.SignData(hash, TEMP_PRIVATE_KEY)
+	// 4. ASSINATURA DIGITAL REAL (Utilizando a chave privada da instituição logada)
+	signature, err := utils.SignData(hash, privateKeyHex)
 	if err != nil {
-		http.Error(w, "Erro ao assinar digitalmente", http.StatusInternalServerError)
+		http.Error(w, "Erro ao realizar assinatura digital institucional", http.StatusInternalServerError)
 		return
 	}
 
 	tx := blockchain.CertificateTransaction{
 		ID:           utils.GenerateID(),
 		StudentName:  r.FormValue("student_name"),
-		Institution:  r.FormValue("institution"),
+		Institution:  institutionName, // Nome oficial vindo do banco (impede fraude no front)
 		Course:       r.FormValue("course"),
 		FileHash:     hash,
-		Signature:    signature, // Já vem em formato Hex do utils
+		Signature:    signature,
 		Timestamp:    time.Now().Unix(),
 	}
 
-	// 3. Persistência no PostgreSQL
-	query := `INSERT INTO certificates (id, student_name, institution, course, file_hash, signature, timestamp) 
+	// 5. Persistência no PostgreSQL
+	queryInsert := `INSERT INTO certificates (id, student_name, institution, course, file_hash, signature, timestamp) 
 			  VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
-	_, err = database.DB.Exec(query, 
+	_, err = database.DB.Exec(queryInsert, 
 		tx.ID, tx.StudentName, tx.Institution, tx.Course, tx.FileHash, tx.Signature, tx.Timestamp,
 	)
 	if err != nil {
-		http.Error(w, "Erro ao salvar no banco de dados", http.StatusInternalServerError)
+		http.Error(w, "Erro ao salvar registro no banco de dados", http.StatusInternalServerError)
 		return
 	}
 
-	// 4. Mineração na Blockchain
+	// 6. Mineração na Blockchain
 	Chain.AddBlock([]blockchain.CertificateTransaction{tx})
 
-	// 5. Geração Automática do PDF
+	// 7. Geração Automática do PDF
 	pdfPath, err := utils.GenerateCertificatePDF(tx)
 	if err != nil {
-		fmt.Println("Alerta: Erro ao gerar PDF:", err)
+		fmt.Println("Alerta: Falha na geração do PDF:", err)
 	}
 
-	// 6. Resposta Única de Sucesso
+	// 8. Resposta de Sucesso
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message":  "Certificado registrado e PDF gerado!",
+		"message":  "Certificado registrado com sucesso e assinado digitalmente!",
 		"hash":     hash,
 		"id":       tx.ID,
 		"pdf_path": pdfPath,
@@ -146,10 +160,19 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// MVP: Admin hardcoded. Próximo passo: SELECT no Postgres.
-	if creds.Username != "admin" || creds.Password != "123456" {
+	var storedPassword string
+	query := `SELECT password FROM institutions WHERE username = $1`
+	
+	err := database.DB.QueryRow(query, creds.Username).Scan(&storedPassword)
+	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Credenciais invalidas"})
+		json.NewEncoder(w).Encode(map[string]string{"error": "Usuario nao encontrado"})
+		return
+	}
+
+	if creds.Password != storedPassword {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Senha incorreta"})
 		return
 	}
 
