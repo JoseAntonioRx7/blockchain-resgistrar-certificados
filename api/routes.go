@@ -12,4 +12,9 @@ func RegisterRoutes() {
 	// 2. Rota Privada (Apenas instituições com o "Crachá" JWT podem acessar)
 	// O JWTMiddleware intercepta a chamada antes de chegar no RegisterHandler
 	http.HandleFunc("/register", JWTMiddleware(RegisterHandler))
+
+	// Servidor de arquivos estáticos para a pasta de PDFs
+	fs := http.FileServer(http.Dir("./pdfs"))
+	http.Handle("/pdfs/", http.StripPrefix("/pdfs/", fs))
+
 }

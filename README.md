@@ -1,463 +1,447 @@
-# 🔗 Cert-Chain: Sistema de Certificados em Blockchain
+# 🔗 TTLedger
 
-> **Plataforma descentralizada para autenticação e verificação de certificados educacionais utilizando blockchain e criptografia digital.**
+### Trusted Transcript Ledger
 
----
-
-## 📋 Visão Geral do Projeto
-
-**Cert-Chain** é uma solução inovadora para combater fraudes em certificados e diplomas educacionais. A startup implementa uma blockchain completa desenvolvida from scratch em Go, integrando autenticação criptográfica, banco de dados persistente e uma interface web intuitiva.
-
-### Problema que Soluciona
-
-- ❌ Certificados falsificados circulando no mercado educacional
-- ❌ Impossibilidade de verificar autenticidade de diplomas rapidamente
-- ❌ Falta de transparência entre instituições e empregadores
-- ❌ Centralização de informações educacionais em órgãos únicos
-
-### Solução Oferecida
-
-✅ **Prova criptográfica de autenticidade** - Cada certificado gera um hash único e imutável  
-✅ **Blockchain descentralizada** - Registro permanente e tamper-proof  
-✅ **Verificação pública** - Qualquer pessoa pode validar um certificado sem intermediários  
-✅ **Assinatura digital** - Sistema cryptográfico Ed25519 para autenticação institucional  
-✅ **Interface intuitiva** - Dashboard web para registrar e verificar certificados  
+> **Infraestrutura descentralizada para autenticação e verificação de certificados educacionais utilizando blockchain e criptografia digital.**
 
 ---
 
-## 🏗️ Arquitetura da Solução
+# 📋 Visão Geral
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     Frontend (HTML/JS)                      │
-│              (Interface de Usuário + Dashboard)             │
-└──────────────────────┬──────────────────────────────────────┘
-                       │ HTTP/REST
-┌──────────────────────▼──────────────────────────────────────┐
-│              Backend Go - API REST (Port :8080)             │
-│  ┌─────────────┐    ┌──────────┐    ┌────────────────┐    │
-│  │ /register   │    │ /verify  │    │ /list          │    │
-│  └─────────────┘    └──────────┘    └────────────────┘    │
-└──────────────────────┬──────────────────────────────────────┘
-        ┌─────────────┬┴────────────┬─────────────┐
-        │             │             │             │
-┌───────▼────┐ ┌─────▼──────┐ ┌───▼────────┐ ┌─▼─────────────┐
-│ Blockchain │ │ Database   │ │  Utils     │ │  Cryptography│
-│ (Chain)    │ │ (PostgreSQL)│ │  (Helper)  │ │ (Ed25519)    │
-└────────────┘ └────────────┘ └────────────┘ └──────────────┘
-```
+**TTLedger** é uma plataforma baseada em **blockchain** projetada para registrar, autenticar e verificar **certificados educacionais e credenciais acadêmicas** de forma segura, transparente e imutável.
 
-### Componentes Principais
+O projeto busca resolver um problema crescente no mercado educacional global: **fraudes em diplomas e certificados**.
 
-#### 1. **Blockchain Engine** (`/blockchain`)
-- **`chain.go`** - Núcleo da blockchain com persistência
-- **`block.go`** - Estrutura de blocos individuais
-- **`pow.go`** - Algoritmo Proof of Work (Difficulty = 4)
-- **`transaction.go`** - Estrutura de transações (certificados)
+A solução combina:
 
-#### 2. **API Layer** (`/api`)
-- **`routes.go`** - Definição de endpoints REST
-- **`handlers.go`** - Lógica de registrar, verificar e listar certificados
+* blockchain própria desenvolvida em **Golang**
+* assinaturas criptográficas **Ed25519**
+* banco de dados **PostgreSQL**
+* interface web de verificação pública
 
-#### 3. **Database** (`/database`)
-- **`db.go`** - Integração com PostgreSQL
-- Criação automática de tabelas: `certificates` e `blocks`
-
-#### 4. **Utilitários** (`/utils`)
-- **`crypto.go`** - Geração de chaves e assinatura digital (Ed25519)
-- **`hash.go`** - Hash SHA-256 de arquivos
-- **`id.go`** - Geração de IDs únicos
-
-#### 5. **Frontend** (`/web`)
-- **`index.html`** - Interface de registro e verificação
-- **`scripts.js`** - Lógica de interação
-- **`style.css`** - Estilos responsivos
+O objetivo é construir uma **infraestrutura global confiável para verificação de credenciais educacionais**.
 
 ---
 
-## ⚙️ Como Funciona
+# 🚨 Problema
+
+Fraudes em certificados e diplomas são um problema mundial.
+
+Principais desafios atuais:
+
+* falsificação de diplomas
+* certificados digitais manipulados
+* verificação manual por universidades
+* processos lentos de autenticação
+* baixa interoperabilidade entre instituições
+
+Empresas e universidades frequentemente precisam **verificar manualmente credenciais educacionais**, gerando:
+
+* atrasos
+* custos administrativos
+* risco de fraude
+
+---
+
+# 💡 Solução
+
+O **TTLedger** cria um **registro descentralizado e imutável de certificados educacionais**.
+
+Cada certificado gera um **hash criptográfico único** que é registrado na blockchain.
+
+Esse registro permite que qualquer pessoa verifique a autenticidade de um certificado sem depender da instituição emissora.
+
+Principais características:
+
+* 🔐 **Prova criptográfica de autenticidade**
+* ⛓️ **Registro imutável em blockchain**
+* 🌍 **Verificação pública e descentralizada**
+* 🏫 **Assinatura digital institucional**
+* 📄 **Validação instantânea de certificados**
+
+---
+
+# ⚙️ Como Funciona
 
 ### Fluxo de Registro de Certificado
 
 ```
-1. Usuário faz upload de arquivo + dados (aluno, instituição, curso)
+1. Instituição emite certificado
    ↓
-2. Backend calcula hash SHA-256 do arquivo
+2. Sistema gera hash SHA-256 do documento
    ↓
-3. Cria assinatura digital com chave privada da instituição (Ed25519)
+3. Instituição assina digitalmente com chave privada (Ed25519)
    ↓
-4. Salva certificado na tabela PostgreSQL
+4. Certificado registrado na blockchain
    ↓
-5. Cria transação e adiciona ao bloco atual
+5. Bloco minerado utilizando Proof of Work
    ↓
-6. Minera novo bloco (Proof of Work - 4 zeros no início)
-   ↓
-7. Bloco salvo no PostgreSQL com histórico completo
-   ↓
-8. Retorna hash ao usuário para verificação futura
+6. Registro torna-se permanente
 ```
+
+---
 
 ### Fluxo de Verificação
 
 ```
-1. Usuário fornece hash do certificado
+1. Usuário fornece o hash do certificado
    ↓
-2. Sistema busca o hash na blockchain
+2. Sistema consulta a blockchain
    ↓
-3. Valida presença e integridade do bloco
+3. Verifica integridade do bloco
    ↓
-4. Retorna dados: aluno, instituição, curso, assinatura digital
+4. Retorna dados do certificado registrado
+```
+
+Resultado:
+
+```
+✔ Certificado válido
+ou
+✖ Certificado inválido
 ```
 
 ---
 
-## 🗂️ Estrutura de Diretórios
+# 🏗️ Arquitetura do Sistema
 
 ```
-cert-chain/
-├── main.go                 # Ponto de entrada da aplicação
-├── go.mod                  # Dependências Go
+┌──────────────────────────────────────┐
+│        Frontend (HTML / JS)          │
+│     Dashboard + Verificação Web      │
+└───────────────┬──────────────────────┘
+                │
+            HTTP / REST
+                │
+┌───────────────▼──────────────────────┐
+│         Backend API (Go)             │
+│     Registro | Verificação | List    │
+└───────────────┬──────────────────────┘
+                │
+     ┌──────────┼───────────┬──────────┐
+     │          │           │          │
+┌────▼────┐ ┌───▼────┐ ┌────▼────┐ ┌───▼────────┐
+│Blockchain│ │Database│ │ Utils  │ │Cryptography│
+│ Engine   │ │Postgres│ │Helper  │ │Ed25519     │
+└──────────┘ └────────┘ └────────┘ └────────────┘
+```
+
+---
+
+# 🧩 Componentes do Sistema
+
+## Blockchain Engine
+
+Responsável por:
+
+* criação de blocos
+* validação da cadeia
+* mineração (Proof of Work)
+* registro imutável de transações
+
+Arquivos principais:
+
+```
+/blockchain
+  block.go
+  chain.go
+  pow.go
+  transaction.go
+```
+
+---
+
+## API Backend
+
+Camada responsável por expor funcionalidades via REST.
+
+Endpoints principais:
+
+```
+POST /register
+GET /verify
+GET /list
+```
+
+Arquivos:
+
+```
+/api
+  handlers.go
+  routes.go
+```
+
+---
+
+## Banco de Dados
+
+Persistência de certificados e blocos.
+
+Tecnologia:
+
+```
+PostgreSQL
+```
+
+Tabelas principais:
+
+* certificates
+* blocks
+
+---
+
+## Utilitários
+
+Funções auxiliares do sistema:
+
+```
+/utils
+  crypto.go
+  hash.go
+  id.go
+```
+
+Responsáveis por:
+
+* assinatura digital
+* geração de hash
+* geração de IDs únicos
+
+---
+
+# 📂 Estrutura do Projeto
+
+```
+ttledger/
+│
+├── main.go
+├── go.mod
 ├── go.sum
-├── postgress.sql           # Scripts SQL para banco de dados
-├── README.md               # Este arquivo
+├── README.md
 │
 ├── api/
-│   ├── handlers.go         # Handlers dos endpoints REST
-│   └── routes.go           # Definição das rotas
+│   ├── handlers.go
+│   └── routes.go
 │
 ├── blockchain/
-│   ├── block.go            # Estrutura do bloco
-│   ├── chain.go            # Lógica da blockchain
-│   ├── pow.go              # Proof of Work
-│   └── transaction.go      # Estrutura de transação
+│   ├── block.go
+│   ├── chain.go
+│   ├── pow.go
+│   └── transaction.go
 │
 ├── database/
-│   └── db.go               # Inicialização e gerenciamento do PostgreSQL
+│   └── db.go
 │
 ├── utils/
-│   ├── crypto.go           # Criptografia Ed25519
-│   ├── hash.go             # Hashing SHA-256
-│   └── id.go               # Geração de IDs únicos
+│   ├── crypto.go
+│   ├── hash.go
+│   └── id.go
 │
 └── web/
-    ├── index.html          # Interface web
-    ├── scripts.js          # Lógica frontend
-    └── style.css           # Estilos CSS
+    ├── index.html
+    ├── scripts.js
+    └── style.css
 ```
 
 ---
 
-## 🚀 Como Começar
+# 🔐 Segurança
+
+O TTLedger utiliza múltiplas camadas de segurança.
+
+| Tecnologia    | Função                      |
+| ------------- | --------------------------- |
+| SHA-256       | Integridade de certificados |
+| Ed25519       | Assinatura digital          |
+| Proof of Work | Imutabilidade da blockchain |
+| Hash chaining | Integridade dos blocos      |
+
+Garantias:
+
+* certificados não podem ser alterados
+* registros são permanentes
+* verificação pública e transparente
+
+---
+
+# 📡 API REST
+
+### Registrar Certificado
+
+```
+POST /register
+```
+
+Dados enviados:
+
+```
+student_name
+institution
+course
+file
+```
+
+Resposta:
+
+```
+{
+ "message": "Certificado registrado",
+ "hash": "...",
+ "id": "..."
+}
+```
+
+---
+
+### Verificar Certificado
+
+```
+GET /verify?hash=HASH
+```
+
+Resposta:
+
+```
+{
+ "found": true,
+ "student_name": "...",
+ "institution": "...",
+ "course": "...",
+ "block_index": 1
+}
+```
+
+---
+
+### Listar Certificados
+
+```
+GET /list
+```
+
+---
+
+# 🚀 Como Executar
 
 ### Pré-requisitos
 
-- **Go 1.25.6+** - [Download](https://golang.org/dl/)
-- **PostgreSQL 12+** - [Download](https://www.postgresql.org/download/)
-- **Git** - Controle de versão
+* Go 1.25+
+* PostgreSQL 12+
+* Git
 
-### 1. Instalação do PostgreSQL
+---
 
-```bash
-# Windows (usando instalador)
-# Crie um banco de dados chamado: cert_chain
-# Usuário: postgres
-# Senha: tedcrypto1239
+### Instalar dependências
+
 ```
-
-### 2. Clonar Repositório
-
-```bash
-git clone https://github.com/seu-usuario/cert-chain.git
-cd cert-chain
-```
-
-### 3. Instalar Dependências Go
-
-```bash
 go mod download
 go mod tidy
 ```
 
-### 4. Setup do Banco de Dados
+---
 
-```bash
-# Conecte ao PostgreSQL e execute:
-psql -U postgres -d cert_chain -f postgress.sql
+### Executar o projeto
+
 ```
-
-### 5. Configurar Credenciais
-
-Edite em [`database/db.go`](database/db.go):
-
-```go
-connStr := "host=localhost port=5432 user=postgres password=SEU_PASSWORD dbname=cert_chain sslmode=disable"
-```
-
-### 6. Executar Aplicação
-
-```bash
 go run main.go
 ```
 
-**Output esperado:**
+Servidor disponível em:
+
 ```
-Chaves geradas com sucesso!
-Public Key: ...
-Private Key: ...
-Banco de Dados conectado com sucesso!
-Tabela 'certificates' pronta para receber dados!
-Tabela 'blocks' pronta para receber dados!
-Blockchain funcionando!
-Servidor rodando em http://localhost:8080
-```
-
-Acesse: **http://localhost:8080**
-
----
-
-## 📡 API REST Endpoints
-
-### 1. Registrar Certificado
-
-**POST** `/register`
-
-```javascript
-FormData:
-- student_name: "João da Silva"
-- institution: "Universidade Federal"
-- course: "Engenharia de Software"
-- file: <arquivo PDF>
-
-Resposta:
-{
-  "message": "Certificado registrado com sucesso",
-  "hash": "a1b2c3d4e5f6...",
-  "id": "550e8400-e29b-41d4-a716-446655440000"
-}
-```
-
-### 2. Verificar Certificado
-
-**GET** `/verify?hash=a1b2c3d4e5f6`
-
-```javascript
-Resposta:
-{
-  "found": true,
-  "student_name": "João da Silva",
-  "institution": "Universidade Federal",
-  "course": "Engenharia de Software",
-  "file_hash": "a1b2c3d4e5f6...",
-  "signature": "hexadecimal_signature",
-  "timestamp": 1709779200,
-  "block_index": 1
-}
-```
-
-### 3. Listar Certificados
-
-**GET** `/list`
-
-```javascript
-Resposta:
-{
-  "total": 45,
-  "certificates": [
-    {
-      "id": "...",
-      "student_name": "Maria Santos",
-      "institution": "UFRJ",
-      "course": "Ciência da Computação",
-      "file_hash": "...",
-      "timestamp": 1709779200
-    },
-    ...
-  ]
-}
+http://localhost:8080
 ```
 
 ---
 
-## 🔐 Segurança & Criptografia
+# 🎯 Roadmap
 
-### Mecanismos Implementados
+### Phase 1 (MVP)
 
-| Componente | Tecnologia | Finalidade |
-|-----------|-----------|-----------|
-| **Hash de Arquivo** | SHA-256 | Integridade do certificado |
-| **Assinatura Digital** | Ed25519 | Autenticação institucional |
-| **Proof of Work** | SHA-256 + Difficulty 4 | Imutabilidade blockchain |
-| **Chaves Institucionais** | Ed25519 Key Pair | Identificação única da instituição |
+* blockchain core
+* API REST
+* registro de certificados
+* verificação pública
 
-### Garantias
+### Phase 2
 
-✅ Certificado hashado uma única vez  
-✅ Assinado com chave privada da instituição  
-✅ Registrado em bloco imutável  
-✅ Verificável publicamente sem intermediários  
+* autenticação institucional
+* dashboard administrativo
+* geração automática de QR Code
 
----
+### Phase 3
 
-## 📊 Estrutura do Banco de Dados
+* rede de nós distribuídos
+* integração com universidades
+* API pública
 
-### Tabela: `certificates`
+### Phase 4
 
-```sql
-id VARCHAR(64) PRIMARY KEY           -- ID único da transação
-student_name VARCHAR(255)            -- Nome do aluno
-institution VARCHAR(255)             -- Instituição de ensino
-course VARCHAR(255)                  -- Curso realizado
-file_hash TEXT UNIQUE NOT NULL       -- Hash SHA-256 do arquivo
-signature TEXT                       -- Assinatura Ed25519
-timestamp BIGINT                     -- Timestamp Unix
-```
-
-### Tabela: `blocks`
-
-```sql
-index INTEGER PRIMARY KEY            -- Número do bloco
-timestamp BIGINT                     -- Quando foi minerado
-prev_hash TEXT                       -- Hash do bloco anterior
-hash TEXT                            -- Hash do bloco atual
-nonce BIGINT                         -- Nonce para Proof of Work
-transactions JSONB                   -- Array de transações
-```
+* integração com blockchain pública
+* mobile app
+* identidade digital descentralizada
 
 ---
 
-## 🧠 Funcionamento Técnico Detalhado
+# 💼 Visão de Negócio
 
-### Processo de Mineração (Proof of Work)
+O TTLedger pode operar como **SaaS para instituições educacionais**.
 
-```go
-const Difficulty = 4  // Requer 4 zeros no início do hash
+Possíveis modelos de receita:
 
-// Mining:
-// Hash esperado: 0000xxxxxxxxxxxx...
-// A cada tentativa, nonce incrementa
-// Até encontrar hash com prefixo correto
-```
-
-### Carregamento da Blockchain
-
-1. Backend inicia
-2. Conecta ao PostgreSQL
-3. Busca todos os blocos (ORDER BY index ASC)
-4. Se vazio, cria Bloco Gênese
-5. Salva estado em memória + banco
-
-### Adição de Novo Bloco
-
-1. Coleta transações pendentes
-2. Cria novo bloco com referência ao anterior
-3. Executa Proof of Work (Mining)
-4. Persiste no PostgreSQL
+* taxa por certificado registrado
+* planos institucionais
+* API para recrutadores
+* auditoria de credenciais
 
 ---
 
-## 🎯 Roadmap & Próximas Features
+# 🌍 Impacto
 
-### Phase 1 (Atual) ✅
-- [x] Blockchain core em Go
-- [x] API REST básica
-- [x] Integração PostgreSQL
-- [x] Criptografia Ed25519
-- [x] Interface web simples
+Benefícios esperados:
 
-### Phase 2 (Próximo)
-- [ ] Autenticação de instituições (JWT)
-- [ ] Dashboard administrativo
-- [ ] Exportação de relatórios
-- [ ] API de integração para universidades
-- [ ] Testes unitários automatizados
-
-### Phase 3 (Futuro)
-- [ ] Deploy em Kubernetes
-- [ ] Sincronização com blockchain pública (Ethereum)
-- [ ] Mobile app (React Native)
-- [ ] Sistema de reputação institucional
-- [ ] DAO governance
+* redução de fraude educacional
+* confiança digital em diplomas
+* verificação instantânea de credenciais
+* interoperabilidade entre instituições
 
 ---
 
-## 🧪 Testando Localmente
+# 👤 Autor
 
-### 1. Registrar um Certificado
+**José Antonio Ramos da Silva**
+Estudante de Engenharia da Computação
 
-```bash
-curl -X POST http://localhost:8080/register \
-  -F "student_name=João Silva" \
-  -F "institution=UFRJ" \
-  -F "course=Engenharia" \
-  -F "file=@certificado.pdf"
-```
+Interesses:
 
-### 2. Verificar Certificado
-
-```bash
-curl "http://localhost:8080/verify?hash=a1b2c3d4e5f6..."
-```
-
-### 3. Listar Todos
-
-```bash
-curl http://localhost:8080/list
-```
+* blockchain
+* inteligência artificial
+* segurança digital
+* infraestrutura distribuída
 
 ---
 
-## 🔧 Tecnologias Utilizadas
+# 📜 Licença
 
-| Stack | Tecnologia |
-|-------|-----------|
-| **Backend** | Go 1.25.6 |
-| **Database** | PostgreSQL 12+ |
-| **Criptografia** | SHA-256, Ed25519 |
-| **Frontend** | HTML5, CSS3, Vanilla JavaScript |
-| **Formato de Dados** | JSON, JSONB |
-| **Protocolo** | HTTP/REST |
-
-### Dependências Go
-
-```
-- github.com/lib/pq (PostgreSQL driver)
-```
+MIT License
 
 ---
 
-## 👥 Visão de Negócio
+# 🤝 Contribuição
 
-### Proposta de Valor
+Contribuições são bem-vindas.
 
-1. **Para Instituições** - Melhor reputação e segurança em seus certificados
-2. **Para Alunos** - Portabilidade e segurança do histórico acadêmico
-3. **Para Empregadores** - Verificação rápida e confiável de credenciais
-4. **Para Sociedade** - Redução de fraudes educacionais
+Você pode colaborar com:
 
-### Modelo de Monetização (Futuro)
-
-- 💰 Taxa por certificado registrado (~0.1% - 0.5%)
-- 💰 Plano enterprise para universidades
-- 💰 API de verificação para recrutadoras
-- 💰 Serviços de auditoria e compliance
+* melhorias no código
+* auditoria de segurança
+* novas funcionalidades
+* integrações educacionais
 
 ---
 
-## 📝 Licença
+# 📬 Contato
 
-MIT License - Sinta-se livre para usar e contribuir!
+GitHub:
 
----
-
-## 📞 Contato & Suporte
-
-Dúvidas ou sugestões? Entre em contato!
-
-**GitHub**: https://github.com/JoseAntonioRx7
-
----
-
-## 🙏 Agradecimentos
-
-Desenvolvido como projeto de aprendizado em blockchain com foco em aplicações reais.
-
+https://github.com/JoseAntonioRx7
