@@ -3,27 +3,32 @@ package utils
 import (
 	"crypto/ed25519"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 )
 
-var PrivateKey ed25519.PrivateKey
-var PublicKey ed25519.PublicKey
-
-// GenerateInstitutionkeys cria um par de chaves para a instituição ed25519
-func GenerateInstitutionKeys() (ed25519.PublicKey, ed25519.PrivateKey, error) {
-	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
-
+// GenerateInstitutionKeys agora retorna chaves em formato HEX para salvar no Postgres
+func GenerateInstitutionKeys() (string, string, error) {
+	pub, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
-		return nil, nil, fmt.Errorf("falha ao gerar chaves criptograficas: %v", err)
+		return "", "", fmt.Errorf("falha ao gerar chaves criptograficas: %v", err)
 	}
 
-	PublicKey = publicKey
-	PrivateKey = privateKey
-	return publicKey, privateKey, nil
-
+	// Convertemos para Hexadecimal para facilitar o armazenamento no banco
+	return hex.EncodeToString(pub), hex.EncodeToString(priv), nil
 }
 
-// SignData assina  hash do certificado usando a chave privada da instituição
-func SignData(privateKey ed25519.PrivateKey, data []byte) []byte {
-	return ed25519.Sign(privateKey, data)
+// SignData assina o hash do certificado usando a chave privada (em HEX) da instituição
+func SignData(hash string, privateKeyHex string) (string, error) {
+	// 1. Converte a chave privada de Hex para Bytes
+	privBytes, err := hex.DecodeString(privateKeyHex)
+	if err != nil {
+		return "", err
+	}
+
+	// 2. Assina os dados (o hash do arquivo)
+	signature := ed25519.Sign(privBytes, []byte(hash))
+
+	// 3. Retorna a assinatura em Hex para ser gravada na Blockchain e no DB
+	return hex.EncodeToString(signature), nil
 }

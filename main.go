@@ -41,4 +41,8 @@ func main() {
 	if err != nil {
 		fmt.Printf("Erro ao iniciar o servidor: %v\n", err)
 	}
+
+	// Isso permite que ao acessar http://localhost:8080/pdfs/nome.pdf o arquivo seja baixado
+	http.Handle("/pdfs/", http.StripPrefix("/pdfs/", http.FileServer(http.Dir("generated_pdfs"))))
+	
 }
