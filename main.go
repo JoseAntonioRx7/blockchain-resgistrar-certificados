@@ -5,44 +5,42 @@ import (
 	"cert-chain/blockchain"
 	"cert-chain/database"
 	"cert-chain/utils"
-	"net/http"
 	"fmt"
-	
+	"net/http"
 )
 
-
 func main() {
-
-	// Gerar chaves para a instituição
+	// 1. Configurações Iniciais e Criptografia
 	publicKey, privateKey, err := utils.GenerateInstitutionKeys()
-
 	if err != nil {
 		fmt.Printf("Erro ao gerar chaves: %v\n", err)
-	 }else{
+	} else {
 		fmt.Printf("Chaves geradas com sucesso!\nPublic Key: %x\nPrivate Key: %x\n", publicKey, privateKey)
-	 }
+	}
 
-	// 1. INICIA O BANCO DE DADOS PRIMEIRO
+	// 2. Inicialização de Infraestrutura (DB e Blockchain)
 	database.InitDB()
-
-	// 2. Carrega a Blockchain (O código que já fizemos)
 	api.Chain = blockchain.LoadBlockchain()
-	fmt.Println("Blockchain funcionando!")
-	
+	fmt.Println("Blockchain carregada com sucesso!")
+
+	// 3. Definição de Rotas (Devem ser declaradas ANTES do ListenAndServe)
 	api.RegisterRoutes()
-	
+
+	// Servidor de arquivos estáticos (Frontend na pasta /web)
 	fs := http.FileServer(http.Dir("./web"))
 	http.Handle("/", fs)
 
-	fmt.Println("Servidor rodando em http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	// Servidor de PDFs (Consolidado para a pasta correta de saída)
+	// Certifique-se de que o RegisterHandler salva nesta mesma pasta
+	pdfFs := http.FileServer(http.Dir("./pdfs"))
+	http.Handle("/pdfs/", http.StripPrefix("/pdfs/", pdfFs))
 
-	err = http.ListenAndServe(":8080", nil)
-	if err != nil {
-		fmt.Printf("Erro ao iniciar o servidor: %v\n", err)
-	}
-
-	// Isso permite que ao acessar http://localhost:8080/pdfs/nome.pdf o arquivo seja baixado
-	http.Handle("/pdfs/", http.StripPrefix("/pdfs/", http.FileServer(http.Dir("generated_pdfs"))))
+	// 4. Inicialização Única do Servidor
+	port := ":8080"
+	fmt.Printf("TTLedger Online: http://localhost%s\n", port)
 	
+	serverErr := http.ListenAndServe(port, nil)
+	if serverErr != nil {
+		fmt.Printf("Falha crítica no servidor: %v\n", serverErr)
+	}
 }
