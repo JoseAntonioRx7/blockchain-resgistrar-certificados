@@ -65,6 +65,14 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// NOVO: Rebobina o ponteiro do arquivo para o início após a leitura do Hash
+	// Isso garante que o arquivo não seja salvo em branco no passo 7
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		http.Error(w, "Erro ao processar a leitura do arquivo", http.StatusInternalServerError)
+		return
+	}
+
 	// 4. ASSINATURA DIGITAL REAL (Utilizando a chave privada da instituição logada)
 	signature, err := utils.SignData(hash, privateKeyHex)
 	if err != nil {
@@ -73,18 +81,18 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tx := blockchain.CertificateTransaction{
-		ID:           utils.GenerateID(),
-		StudentName:  r.FormValue("student_name"),
-		Institution:  institutionName, // Nome oficial vindo do banco (impede fraude no front)
-		Course:       r.FormValue("course"),
-		FileHash:     hash,
-		Signature:    signature,
-		Timestamp:    time.Now().Unix(),
+		ID:          utils.GenerateID(),
+		StudentName: r.FormValue("student_name"),
+		Institution: institutionName, // Nome oficial vindo do banco (impede fraude no front)
+		Course:      r.FormValue("course"),
+		FileHash:    hash,
+		Signature:   signature,
+		Timestamp:   time.Now().Unix(),
 	}
 
 	// 5. Persistência no PostgreSQL
 	queryInsert := `INSERT INTO certificates (id, student_name, institution, course, file_hash, signature, timestamp) 
-			  VALUES ($1, $2, $3, $4, $5, $6, $7)`
+              VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
 	_, err = database.DB.Exec(queryInsert, 
 		tx.ID, tx.StudentName, tx.Institution, tx.Course, tx.FileHash, tx.Signature, tx.Timestamp,
@@ -97,10 +105,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// 6. Mineração na Blockchain
 	Chain.AddBlock([]blockchain.CertificateTransaction{tx})
 
-	// 7. Geração Automática do PDF
-	pdfPath, err := utils.GenerateCertificatePDF(tx)
+	// 7. NOVO: Salva o PDF original enviado pela instituição
+	pdfPath, err := utils.SaveUploadedCertificate(file, tx.ID)
 	if err != nil {
-		fmt.Println("Alerta: Falha na geração do PDF:", err)
+		fmt.Println("Alerta: Falha ao salvar o PDF original:", err)
 	}
 
 	// 8. Resposta de Sucesso
