@@ -17,7 +17,7 @@ func (b *Block) Mine() {
 	// Calculamos o alvo uma única vez fora do loop para performance
 	target := bytes.Repeat([]byte{0}, Difficulty)
 
-	fmt.Printf("TTLedger: Iniciando mineração do bloco %d...\n", b.Index)
+	fmt.Printf("TTLedger: Iniciando mineracao do bloco %d...\n", b.Index)
 
 	for {
 		hash = b.calculateHash()

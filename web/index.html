@@ -1,181 +1,203 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TTLedger | Dashboard Institucional</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTLedger | Dashboard Institucional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="dashboard-layout">
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <div class="logo-icon"><i class="fas fa-link"></i></div>
-        <div class="brand-text">
-          <h2>TTLedger</h2>
-          <span>Blockchain Infrastructure</span>
-        </div>
-      </div>
-
-      <nav class="sidebar-nav">
-        <ul>
-          <li class="active"><a href="#"><i class="fas fa-th-large"></i> Dashboard</a></li>
-          <li><a href="#registerSection"><i class="fas fa-file-signature"></i> Emitir Certificado</a></li>
-          <li><a href="#verifySection"><i class="fas fa-shield-check"></i> Verificar Autenticidade</a></li>
-          <li><a href="#"><i class="fas fa-history"></i> Histórico Geral</a></li>
-        </ul>
-      </nav>
-
-      <div id="authHeader" class="sidebar-footer" style="display: none;">
-        <div class="user-info">
-          <i class="fas fa-university"></i>
-          <span id="userNameDisplay">Instituição</span>
-        </div>
-        <button onclick="logoutInstituicao()" class="btn-logout">
-          <i class="fas fa-sign-out-alt"></i> Sair do Sistema
-        </button>
-      </div>
-    </aside>
-
-    <main class="main-content">
-      
-      <header class="top-bar">
-        <div class="welcome-text">
-          <h1 id="pageTitle">Visão Geral</h1>
-          <p id="currentDate">Domingo, 8 de Março de 2026</p>
-        </div>
-        <div class="status-badge">
-          <span class="dot pulse"></span>
-          REDE BLOCKCHAIN: <strong>CONECTADA</strong>
-        </div>
-      </header>
-
-      <section id="loginSection" class="glass-card login-center">
-        <div class="card-header">
-          <h2>Acesso Institucional</h2>
-          <p>Entre com suas credenciais para gerenciar a emissão de certificados.</p>
-        </div>
-        <form id="loginForm" class="form">
-          <div class="form-group">
-            <label>Usuário</label>
-            <input type="text" id="loginUser" placeholder="Seu usuário institucional" required>
-          </div>
-          <div class="form-group">
-            <label>Senha</label>
-            <input type="password" id="loginPass" placeholder="••••••••" required>
-          </div>
-          <button type="submit" class="btn btn-primary">Entrar no Sistema</button>
-        </form>
-        <div id="loginResult" class="result"></div>
-      </section>
-
-      <div id="dashboardStats" class="stats-grid" style="display: none;">
-        <div class="stat-card">
-          <div class="stat-icon blue"><i class="fas fa-file-contract"></i></div>
-          <div class="stat-data">
-            <span class="stat-label">Total Emitido</span>
-            <h3 id="statTotal" class="stat-value">0</h3>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon purple"><i class="fas fa-cube"></i></div>
-          <div class="stat-data">
-            <span class="stat-label">Blocos Minerados</span>
-            <h3 id="statBlocks" class="stat-value">0</h3>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon green"><i class="fas fa-check-double"></i></div>
-          <div class="stat-data">
-            <span class="stat-label">Válidos na Rede</span>
-            <h3 class="stat-value">100%</h3>
-          </div>
-        </div>
-      </div>
-
-      <div class="action-grid" id="mainActions" style="display: none;">
-        
-        <section id="registerSection" class="glass-card">
-          <div class="card-header">
-            <h2>Registrar Certificado</h2>
-            <p>Os dados serão minerados e gravados na Blockchain.</p>
-          </div>
-          <form id="registerForm" class="form" enctype="multipart/form-data">
-            <div class="form-group">
-              <label>Nome do Aluno</label>
-              <input type="text" name="student_name" placeholder="Ex: José Antônio Ramos" required>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-icon"><i class="fas fa-link"></i></div>
+                <div class="brand-text">
+                    <h2>TTLedger</h2>
+                    <span>Blockchain Infrastructure</span>
+                </div>
             </div>
-            <div class="form-group">
-              <label>Nome do Curso</label>
-              <input type="text" name="course" placeholder="Ex: Engenharia de Computação" required>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="#"><i class="fas fa-th-large"></i> Dashboard</a></li>
+                    <li><a href="#registerSection"><i class="fas fa-file-signature"></i> Emitir Certificado</a></li>
+                    <li><a href="#verifySection"><i class="fas fa-shield-check"></i> Verificar Autenticidade</a></li>
+                    <li id="adminMenuItem" style="display: none;"><a href="#adminSection"><i class="fas fa-plus-square"></i> Expansão de Rede</a></li>
+                </ul>
+            </nav>
+
+            <div id="authHeader" class="sidebar-footer" style="display: none;">
+                <div class="user-info">
+                    <i class="fas fa-university"></i>
+                    <span id="userNameDisplay">Instituição</span>
+                </div>
+                <button onclick="logoutInstituicao()" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Sair do Sistema
+                </button>
             </div>
-            <div class="form-group">
-              <label>Upload do Diploma (PDF/Img)</label>
-              <div class="file-drop-area">
-                <input type="file" name="file" id="file" required>
-                <span class="file-msg">Arraste ou clique para selecionar</span>
-              </div>
+        </aside>
+
+        <main class="main-content">
+            
+            <header class="top-bar">
+                <div class="welcome-text">
+                    <h1 id="pageTitle">Acesso Restrito</h1>
+                    <p id="currentDate"></p>
+                </div>
+                <div class="status-badge">
+                    <span class="dot pulse"></span>
+                    REDE BLOCKCHAIN: <strong>CONECTADA</strong>
+                </div>
+            </header>
+
+            <section id="loginSection" class="glass-card login-center">
+                <div class="card-header">
+                    <h2>Acesso Institucional</h2>
+                    <p>Entre com suas credenciais para gerenciar a emissão de certificados.</p>
+                </div>
+                <form id="loginForm" class="form">
+                    <div class="form-group">
+                        <label>Usuário</label>
+                        <input type="text" id="loginUser" placeholder="Seu usuário institucional" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Senha</label>
+                        <input type="password" id="loginPass" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Entrar no Sistema</button>
+                </form>
+                <div id="loginResult" class="result"></div>
+            </section>
+
+            <div id="dashboardStats" class="stats-grid" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-file-contract"></i></div>
+                    <div class="stat-data">
+                        <span class="stat-label">Total Emitido</span>
+                        <h3 id="statTotal" class="stat-value">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="fas fa-cube"></i></div>
+                    <div class="stat-data">
+                        <span class="stat-label">Blocos Minerados</span>
+                        <h3 id="statBlocks" class="stat-value">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-check-double"></i></div>
+                    <div class="stat-data">
+                        <span class="stat-label">Válidos na Rede</span>
+                        <h3 class="stat-value">100%</h3>
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="btn btn-success">
-              <i class="fas fa-hammer"></i> Garantir Autenticidade (Minerar)
-            </button>
-          </form>
-          <div id="registerResult" class="result"></div>
-        </section>
 
-        <section id="verifySection" class="glass-card">
-          <div class="card-header">
-            <h2>Verificar Hash</h2>
-            <p>Valide a integridade de qualquer certificado na rede.</p>
-          </div>
-          <div class="verify-container">
-            <div class="form-group">
-              <input type="text" id="hashInput" placeholder="Cole o Hash criptográfico...">
+            <div class="action-grid" id="mainActions" style="display: none;">
+                
+                <section id="registerSection" class="glass-card">
+                    <div class="card-header">
+                        <h2>Registrar Certificado</h2>
+                        <p>Os dados serão minerados e gravados na Blockchain.</p>
+                    </div>
+                    <form id="registerForm" class="form" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label>Nome do Aluno</label>
+                            <input type="text" name="student_name" placeholder="Ex: José Antônio Ramos" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nome do Curso</label>
+                            <input type="text" name="course" placeholder="Ex: Engenharia de Computação" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Arquivo do Diploma (PDF/PNG)</label>
+                            <div class="file-drop-area">
+                                <input type="file" name="file" id="file" required>
+                                <span class="file-msg">Arraste ou clique para selecionar</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-hammer"></i> Garantir Autenticidade (Minerar)
+                        </button>
+                    </form>
+                    <div id="registerResult" class="result"></div>
+                </section>
+
+                <section id="verifySection" class="glass-card">
+                    <div class="card-header">
+                        <h2>Verificar Hash</h2>
+                        <p>Valide a integridade de qualquer certificado na rede.</p>
+                    </div>
+                    <div class="verify-container">
+                        <div class="form-group">
+                            <input type="text" id="hashInput" placeholder="Cole o Hash criptográfico...">
+                        </div>
+                        <button class="btn btn-primary-alt" onclick="verifyCertificate()">
+                            <i class="fas fa-search"></i> Verificar
+                        </button>
+                    </div>
+                    <div id="verifyResult" class="result"></div>
+                </section>
             </div>
-            <button class="btn btn-primary-alt" onclick="verifyCertificate()">
-              <i class="fas fa-search"></i> Verificar
-            </button>
-          </div>
-          <div id="verifyResult" class="result"></div>
-        </section>
 
-      </div>
+            <section id="adminSection" class="glass-card" style="display: none;">
+                <div class="card-header">
+                    <h2>Expandir Rede TTLedger</h2>
+                    <p>Provisione novas chaves para universidades parceiras.</p>
+                </div>
+                <form id="adminForm" class="form-row">
+                    <div class="form-group">
+                        <label>Instituição</label>
+                        <input type="text" id="instName" placeholder="Ex: UFPE" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Usuário</label>
+                        <input type="text" id="instUser" placeholder="admin_ufpe" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Senha Provisória</label>
+                        <input type="password" id="instPass" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Criar Credenciais</button>
+                </form>
+                <div id="adminResult" class="result"></div>
+            </section>
 
-      <section class="glass-card table-section">
-        <div class="table-header">
-          <div class="header-left">
-            <h2>Registros Recentes</h2>
-            <span id="countCerts" class="badge">0 certificados</span>
-          </div>
-          <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar aluno, curso ou hash...">
-          </div>
-        </div>
-        
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Aluno</th>
-                <th>Curso / Instituição</th>
-                <th>Data Emissão</th>
-                <th>Código Hash</th>
-                <th style="text-align: right;">Ações</th>
-              </tr>
-            </thead>
-            <tbody id="dashboardBody">
-              </tbody>
-          </table>
-        </div>
-      </section>
+            <section class="glass-card table-section">
+                <div class="table-header">
+                    <div class="header-left">
+                        <h2>Registros Recentes</h2>
+                        <span id="countCerts" class="badge">0 certificados</span>
+                    </div>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar aluno ou hash...">
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Aluno</th>
+                                <th>Curso / Instituição</th>
+                                <th>Data Emissão</th>
+                                <th>Código Hash</th>
+                                <th style="text-align: right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardBody">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
 
-    </main>
-  </div>
+        </main>
+    </div>
 
-  <script src="scripts.js"></script>
+    <script src="scripts.js"></script>
 </body>
 </html>
