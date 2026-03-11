@@ -213,9 +213,9 @@ function renderTable(certs) {
                 <td>${new Date(c.timestamp * 1000).toLocaleDateString()}</td>
                 <td><code title="${c.file_hash}">${c.file_hash.substring(0, 12)}...</code></td>
                 <td style="text-align: right;">
-                    <a href="${BASE_URL}/pdfs/cert_${c.file_hash}.pdf" target="_blank" class="btn-view" title="Visualizar PDF">
-                        <i class="fas fa-file-pdf"></i>
-                    </a>
+                <a href="/api/pdfs/cert_${c.file_hash}.pdf" target="_blank" class="btn-view" title="Visualizar PDF">
+                    <i class="fas fa-file-pdf"></i>
+                </a>
                     <button class="btn-view" onclick="navigator.clipboard.writeText('${c.file_hash}'); alert('Hash copiado!')" title="Copiar Hash">
                         <i class="fas fa-copy"></i>
                     </button>
