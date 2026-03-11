@@ -1,53 +1,56 @@
 package api
 
-import(
+import (
 	"cert-chain/utils"
+	"context"
 	"net/http"
 	"strings"
-	"context"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// JWTMiddleware "envolve" outra função HTTP
+// JWTMiddleware centraliza a segurança e o CORS das rotas protegidas
 func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
+		// 1. Resolve CORS antes de qualquer validação. 
+		// Se for OPTIONS, o setupCORS retorna true e encerra a requisição aqui.
+		if setupCORS(&w, r) {
 			return
 		}
 
+		// 2. Extração do Token
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			http.Error(w, "Token nao fornecido", http.StatusUnauthorized)
+			sendJSON(w, http.StatusUnauthorized, map[string]string{"error": "Token não fornecido"})
 			return
 		}
 
-		bearerToken := strings.Split(authHeader, " ")
-		if len(bearerToken) != 2 || bearerToken[0] != "Bearer" {
-			http.Error(w, "Formato de token invalido", http.StatusUnauthorized)
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			sendJSON(w, http.StatusUnauthorized, map[string]string{"error": "Formato de token inválido"})
 			return
 		}
 
-		token, err := utils.ValidateJWT(bearerToken[1])
+		// 3. Validação
+		token, err := utils.ValidateJWT(parts[1])
 		if err != nil || !token.Valid {
-			http.Error(w, "Token invalido ou expirado", http.StatusUnauthorized)
+			sendJSON(w, http.StatusUnauthorized, map[string]string{"error": "Token inválido ou expirado"})
 			return
 		}
 
+		// 4. Injeção no Contexto
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			username := claims["username"].(string)
+			username, ok := claims["username"].(string)
+			if !ok {
+				sendJSON(w, http.StatusUnauthorized, map[string]string{"error": "Payload inválido"})
+				return
+			}
 
+			// Passa o username adiante através do contexto da requisição
 			ctx := context.WithValue(r.Context(), "username", username)
-
-			next(w, r.WithContext(ctx))
+			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
 
-		http.Error(w, "Token invalido", http.StatusUnauthorized)
+		sendJSON(w, http.StatusUnauthorized, map[string]string{"error": "Falha na autorização"})
 	}
 }

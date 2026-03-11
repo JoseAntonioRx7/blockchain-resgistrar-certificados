@@ -1,386 +1,246 @@
-const API_URL = "http://localhost:8080";
+/**
+ * TTLedger - Blockchain Infrastructure
+ * Versão Final Consolidada e Corrigida
+ */
 
+const BASE_URL = "http://localhost:8080/api";
 
-// -------------------------------
-// 1. INICIALIZAÇÃO
-// -------------------------------
-
-document.addEventListener("DOMContentLoaded", () => {
-    checkAuth();
-    updateCurrentDate();
-    loadDashboard();
-
-    const forms = {
-        loginForm: loginInstituicao,
-        registerForm: registerCertificate,
-        adminForm: registerInstitution
-    };
-
-    Object.keys(forms).forEach(id => {
+// ---------------------------------------------------------
+// 1. UTILITÁRIOS DE INTERFACE (UI)
+// ---------------------------------------------------------
+const UI = {
+    toggle: (id, display) => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener("submit", forms[id]);
-    });
-});
+        if (el) el.style.display = display;
+    },
+    text: (id, txt) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = txt;
+    },
+    setLoading: (btn, isLoading, text) => {
+        if (btn) {
+            btn.disabled = isLoading;
+            btn.innerHTML = isLoading ? '<i class="fas fa-spinner fa-spin"></i>' : text;
+        }
+    },
+    showResult: (id, message, isError = false) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.innerHTML = message;
+            el.className = `result ${isError ? 'error-text' : 'success-text'}`;
+            el.style.display = "block";
+            if (!isError && (message.includes('code') || message.includes('HEX'))) {
+                el.style.background = "rgba(0, 255, 136, 0.1)";
+                el.style.border = "1px solid #00ff88";
+            }
+        }
+    }
+};
 
-
-// -------------------------------
-// 2. UTILITÁRIOS
-// -------------------------------
-
-function toggleDisplay(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = value;
+// ---------------------------------------------------------
+// 2. COMUNICAÇÃO COM API
+// ---------------------------------------------------------
+async function safeFetch(endpoint, options = {}) {
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    const url = `${BASE_URL}/${cleanEndpoint}`;
+    
+    try {
+        const response = await fetch(url, options);
+        if (response.status === 401) {
+            localStorage.clear();
+            location.reload();
+            throw new Error("Sessão expirada. Refaça o login.");
+        }
+        
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Erro na requisição");
+        return data;
+    } catch (err) {
+        console.error("Erro API:", err.message);
+        throw err;
+    }
 }
 
-function setLoading(btn, isLoading, text) {
-    btn.disabled = isLoading;
-    btn.innerHTML = text;
+// ---------------------------------------------------------
+// 3. NAVEGAÇÃO E CONTROLE DE ACESSO
+// ---------------------------------------------------------
+function showTab(tabId) {
+    UI.toggle("dashboardStats", "none");
+    UI.toggle("mainActions", "none");
+    UI.toggle("adminSection", "none");
+    UI.toggle("loginSection", "none");
+
+    if (tabId === 'dashboard') {
+        UI.toggle("dashboardStats", "grid");
+        UI.toggle("mainActions", "grid");
+        UI.text("pageTitle", "Dashboard Principal");
+    } else if (tabId === 'admin') {
+        UI.toggle("adminSection", "block");
+        UI.text("pageTitle", "Expansão de Rede");
+    }
+
+    document.querySelectorAll(".sidebar-nav li").forEach(li => li.classList.remove("active"));
+    const activeLink = document.querySelector(`.sidebar-nav a[href*="${tabId}"]`);
+    if (activeLink) activeLink.parentElement.classList.add("active");
 }
-
-function updateCurrentDate() {
-    const dateElement = document.getElementById("currentDate");
-    if (!dateElement) return;
-
-    const options = {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-    };
-
-    dateElement.innerText = new Date().toLocaleDateString("pt-BR", options);
-}
-
-
-// -------------------------------
-// 3. AUTENTICAÇÃO
-// -------------------------------
 
 function checkAuth() {
-    const token = localStorage.getItem("instituicao_token");
-
-    const ui = {
-        login: ["loginSection"],
-        dashboard: ["dashboardStats", "mainActions", "authHeader"]
-    };
-
-    // Admin menu e seção visíveis apenas quando logado
-    const adminElements = ["adminMenuItem", "adminSection"];
+    const token = localStorage.getItem("ttledger_token");
+    const user = localStorage.getItem("ttledger_user");
     const isLoggedIn = !!token;
 
-    adminElements.forEach(id => {
-        toggleDisplay(id, isLoggedIn ? "block" : "none");
-    });
+    UI.toggle("dashboardContent", isLoggedIn ? "block" : "none");
+    UI.toggle("loginSection", isLoggedIn ? "none" : "block");
+    UI.toggle("authHeader", isLoggedIn ? "flex" : "none");
+    UI.text("userNameDisplay", user || "Instituição");
 
-    if (token) {
-        ui.login.forEach(id => toggleDisplay(id, "none"));
-        ui.dashboard.forEach(id =>
-            toggleDisplay(id, id === "authHeader" ? "flex" : "block")
-        );
-
-        document.getElementById("pageTitle").innerText = "Visão Geral do Sistema";
-    } else {
-        ui.login.forEach(id => toggleDisplay(id, "block"));
-        ui.dashboard.forEach(id => toggleDisplay(id, "none"));
-
-        document.getElementById("pageTitle").innerText = "Acesso Restrito";
-    }
-}
-
-function logoutInstituicao() {
-    localStorage.removeItem("instituicao_token");
-    checkAuth();
-}
-
-
-// -------------------------------
-// 4. LOGIN
-// -------------------------------
-
-async function loginInstituicao(e) {
-    e.preventDefault();
-
-    const user = document.getElementById("loginUser").value;
-    const pass = document.getElementById("loginPass").value;
-    const resultDiv = document.getElementById("loginResult");
-
-    try {
-        const response = await fetch(`${API_URL}/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                username: user,
-                password: pass
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            resultDiv.innerText = data.error || "Credenciais inválidas";
-            resultDiv.style.color = "#ef4444";
-            return;
+    if (isLoggedIn) {
+        const adminMenu = document.getElementById("adminMenuItem");
+        if (adminMenu) {
+            adminMenu.style.display = (user === 'admin') ? "block" : "none";
         }
-
-        localStorage.setItem("instituicao_token", data.token);
-
-        resultDiv.innerHTML =
-            `<span style="color:#10b981">Entrando na rede...</span>`;
-
-        setTimeout(() => {
-            checkAuth();
-            loadDashboard();
-        }, 800);
-
-    } catch (err) {
-        resultDiv.innerText = "Erro na conexão com a rede blockchain.";
+        showTab('dashboard');
+        loadDashboard();
     }
 }
 
+// ---------------------------------------------------------
+// 4. HANDLERS (Ações Globais)
+// ---------------------------------------------------------
 
-// -------------------------------
-// 5. REGISTRAR CERTIFICADO
-// -------------------------------
-
-async function registerCertificate(e) {
-    e.preventDefault();
-
-    const token = localStorage.getItem("instituicao_token");
-    const btn = e.target.querySelector("button");
-    const resultDiv = document.getElementById("registerResult");
-
-    if (!token) {
-        resultDiv.innerHTML = `<span style="color:#ef4444">Token não encontrado. Faça login novamente.</span>`;
+/**
+ * RESOLUÇÃO: Função de Verificação (Exposta globalmente)
+ */
+async function verifyCertificate() {
+    const hash = document.getElementById("hashInput").value.trim();
+    if (!hash) {
+        UI.showResult("verifyResult", "Por favor, insira um hash para verificar.", true);
         return;
     }
 
-    setLoading(btn, true, "Minerando bloco...");
+    try {
+        const data = await safeFetch(`verify?hash=${hash}`);
+        UI.showResult("verifyResult", `
+            <div style="text-align: left; border-left: 3px solid #00ff88; padding-left: 15px;">
+                <p>✅ <strong>Certificado Autêntico</strong></p>
+                <p><strong>Aluno:</strong> ${data.student_name}</p>
+                <p><strong>Curso:</strong> ${data.course}</p>
+                <p><strong>Instituição:</strong> ${data.institution}</p>
+                <p><strong>Data:</strong> ${new Date(data.timestamp * 1000).toLocaleString()}</p>
+            </div>
+        `, false);
+    } catch (err) {
+        UI.showResult("verifyResult", "Certificado não encontrado ou inválido.", true);
+    }
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector("button");
+    UI.setLoading(btn, true, "Autenticando...");
 
     try {
-        // Cria o FormData a partir do formulário
-        const formData = new FormData(e.target);
-        
-        // Adiciona o token ao FormData
-        formData.append("token", token);
-
-        console.log("Enviando certificado com token:", token.substring(0, 20) + "...");
-
-        const response = await fetch(`${API_URL}/register`, {
+        const username = e.target.loginUser.value;
+        const data = await safeFetch("login", {
             method: "POST",
-            headers: {
-                // Enviamos o token tanto no header quanto no body
-                "Authorization": "Bearer " + token
-            },
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password: e.target.loginPass.value })
+        });
+
+        localStorage.setItem("ttledger_token", data.token);
+        localStorage.setItem("ttledger_user", username);
+        location.reload();
+    } catch (err) {
+        UI.showResult("loginResult", err.message, true);
+        UI.setLoading(btn, false, "Entrar no Sistema");
+    }
+}
+
+async function handleRegisterCertificate(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector("button");
+    const token = localStorage.getItem("ttledger_token");
+    UI.setLoading(btn, true, "Minerando na Rede...");
+
+    try {
+        const formData = new FormData(e.target);
+        const response = await fetch(`${BASE_URL}/register`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` },
             body: formData
         });
 
-        console.log("Response status:", response.status);
-
         const data = await response.json();
-        console.log("Response data:", data);
+        if (!response.ok) throw new Error(data.error || "Erro no registro");
 
-        if (!response.ok) {
-            resultDiv.innerHTML =
-                `<span style="color:#ef4444">${data.error || "Erro desconhecido"}</span>`;
-            return;
-        }
-
-        resultDiv.innerHTML =
-            `<div class="alert-success">
-            Bloco minerado! ID: ${data.id ? data.id.substring(0,8) : 'N/A'}
-            </div>`;
-
+        UI.showResult("registerResult", "✅ Certificado registrado com sucesso!");
         e.target.reset();
         loadDashboard();
-
     } catch (err) {
-        console.error("Erro completo:", err);
-        resultDiv.innerText = "Erro no processo de registro: " + err.message;
+        UI.showResult("registerResult", err.message, true);
+    } finally {
+        UI.setLoading(btn, false, "Garantir Autenticidade");
     }
-
-    setLoading(btn, false, "Garantir Autenticidade");
 }
-
-
-// -------------------------------
-// 6. REGISTRAR INSTITUIÇÃO
-// -------------------------------
-
-async function registerInstitution(e) {
-    e.preventDefault();
-
-    const resultDiv = document.getElementById("adminResult");
-    const btn = e.target.querySelector("button");
-
-    const body = {
-        name: document.getElementById("instName").value,
-        username: document.getElementById("instUser").value,
-        password: document.getElementById("instPass").value
-    };
-
-    setLoading(btn, true, "Gerando credenciais...");
-
-    try {
-        const response = await fetch(
-            `${API_URL}/admin/register-institution`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body)
-            }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            resultDiv.innerHTML =
-                `<span style="color:#ef4444">${data.error}</span>`;
-            return;
-        }
-
-        resultDiv.innerHTML =
-            `<div class="alert-info">
-            Chave privada: <code>${data.private_key}</code>
-            </div>`;
-
-        e.target.reset();
-
-    } catch (err) {
-        resultDiv.innerText = "Erro ao registrar instituição.";
-    }
-
-    setLoading(btn, false, "Criar Credenciais");
-}
-
-
-// -------------------------------
-// 7. DASHBOARD
-// -------------------------------
 
 async function loadDashboard() {
-
-    const token = localStorage.getItem("instituicao_token");
-    const tbody = document.getElementById("dashboardBody");
-
-    if (!token || !tbody) return;
-
+    const token = localStorage.getItem("ttledger_token");
     try {
-        const response = await fetch(`${API_URL}/list`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+        const data = await safeFetch("list", {
+            headers: { "Authorization": `Bearer ${token}` }
         });
+        renderTable(data);
+    } catch (err) { console.error("Erro ao carregar lista:", err); }
+}
 
-        if (!response.ok) {
-            throw new Error("Falha ao carregar dashboard: " + response.status);
-        }
+/**
+ * RESOLUÇÃO: Tabela organizada com links de visualização
+ */
+function renderTable(certs) {
+    const tbody = document.getElementById("dashboardBody");
+    if (!tbody) return;
+    
+    const list = Array.isArray(certs) ? certs : [];
+    UI.text("countCerts", `${list.length} certificados`);
+    UI.text("statTotal", list.length);
 
-        const data = await response.json();
-        
-        // Handle case where response might be an error object
-        if (data.error) {
-            console.error("Erro da API:", data.error);
-            return;
-        }
-
-        const certs = Array.isArray(data) ? data : [];
-        
-        // Ensure we have an array before accessing .length
-        if (!certs || !Array.isArray(certs)) {
-            console.error("Dados inesperados:", data);
-            return;
-        }
-
-        document.getElementById("statTotal").innerText = certs.length;
-        document.getElementById("statBlocks").innerText = certs.length;
-        document.getElementById("countCerts").innerText =
-            `${certs.length} certificados`;
-
-        if (certs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum certificado encontrado</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = certs.reverse().map(cert => `
+    tbody.innerHTML = list.length === 0 
+        ? '<tr><td colspan="5">Nenhum registro encontrado nesta rede.</td></tr>'
+        : list.map(c => `
             <tr>
-                <td><strong>${cert.student_name}</strong></td>
-                <td>${cert.course}<br><small>${cert.institution || ''}</small></td>
-                <td>${cert.timestamp ? new Date(cert.timestamp * 1000).toLocaleDateString() : 'N/A'}</td>
-                <td><code>${(cert.file_hash || '').substring(0,8)}...</code></td>
-                <td style="text-align:right">
-                    <button onclick="copyHash('${cert.file_hash}')">📋</button>
-                    <a href="${API_URL}/pdfs/cert_${cert.id}.pdf" target="_blank">PDF</a>
+                <td><strong>${c.student_name}</strong></td>
+                <td>${c.course}</td>
+                <td>${new Date(c.timestamp * 1000).toLocaleDateString()}</td>
+                <td><code title="${c.file_hash}">${c.file_hash.substring(0, 12)}...</code></td>
+                <td style="text-align: right;">
+                    <a href="${BASE_URL}/pdfs/cert_${c.file_hash}.pdf" target="_blank" class="btn-view" title="Visualizar PDF">
+                        <i class="fas fa-file-pdf"></i>
+                    </a>
+                    <button class="btn-view" onclick="navigator.clipboard.writeText('${c.file_hash}'); alert('Hash copiado!')" title="Copiar Hash">
+                        <i class="fas fa-copy"></i>
+                    </button>
                 </td>
             </tr>
         `).join("");
-
-    } catch (err) {
-        console.error("Erro no dashboard:", err);
-    }
 }
 
+// ---------------------------------------------------------
+// 5. INICIALIZAÇÃO E EVENTOS
+// ---------------------------------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+    checkAuth();
+    UI.text("currentDate", new Date().toLocaleDateString('pt-BR', { dateStyle: 'full' }));
 
-// -------------------------------
-// 8. VERIFICAÇÃO DE CERTIFICADO
-// -------------------------------
+    // Listeners de Formulários
+    document.getElementById("loginForm")?.addEventListener("submit", handleLogin);
+    document.getElementById("registerForm")?.addEventListener("submit", handleRegisterCertificate);
+    
+    // Global Logout
+    window.logout = () => {
+        localStorage.clear();
+        location.reload();
+    };
 
-async function verifyCertificate() {
-
-    const hash = document.getElementById("hashInput").value.trim();
-    const resultDiv = document.getElementById("verifyResult");
-
-    if (!hash) return;
-
-    resultDiv.innerText = "Consultando blockchain...";
-
-    try {
-        const response = await fetch(
-            `${API_URL}/verify?hash=${encodeURIComponent(hash)}`
-        );
-
-        const data = await response.json();
-
-        if (!response.ok || data.error) {
-            resultDiv.innerHTML =
-                `<div class="alert-error">Documento não encontrado</div>`;
-            return;
-        }
-
-        resultDiv.innerHTML = `
-            <div class="result-card">
-                <h4>Certificado Autêntico</h4>
-                <p><strong>Aluno:</strong> ${data.student_name}</p>
-                <p><strong>Hash:</strong> ${hash.substring(0,12)}...</p>
-            </div>
-        `;
-
-    } catch (err) {
-        resultDiv.innerText = "Erro na rede de validação.";
-    }
-}
-
-
-// -------------------------------
-// 9. FILTRO
-// -------------------------------
-
-function filterTable() {
-    const filter = document
-        .getElementById("searchInput")
-        .value
-        .toUpperCase();
-
-    document
-        .querySelectorAll("#dashboardBody tr")
-        .forEach(row => {
-            row.style.display =
-                row.innerText.toUpperCase().includes(filter)
-                    ? ""
-                    : "none";
-        });
-}
-
-function copyHash(hash) {
-    navigator.clipboard.writeText(hash);
-    alert("Hash copiado!");
-}
+    // Vincula a função de verificação ao objeto window para o HTML acessar
+    window.verifyCertificate = verifyCertificate;
+});

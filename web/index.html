@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TTLedger | Dashboard Institucional</title>
+    <title>TTLedger | Blockchain Infrastructure</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -11,6 +12,7 @@
 <body>
 
     <div class="dashboard-layout">
+        
         <aside class="sidebar">
             <div class="sidebar-brand">
                 <div class="logo-icon"><i class="fas fa-link"></i></div>
@@ -22,10 +24,18 @@
 
             <nav class="sidebar-nav">
                 <ul>
-                    <li class="active"><a href="#"><i class="fas fa-th-large"></i> Dashboard</a></li>
-                    <li><a href="#registerSection"><i class="fas fa-file-signature"></i> Emitir Certificado</a></li>
-                    <li><a href="#verifySection"><i class="fas fa-shield-check"></i> Verificar Autenticidade</a></li>
-                    <li id="adminMenuItem" style="display: none;"><a href="#adminSection"><i class="fas fa-plus-square"></i> Expansão de Rede</a></li>
+                    <li class="active">
+                        <a href="#dashboard" id="navDashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+                    </li>
+                    <li>
+                        <a href="#registerSection"><i class="fas fa-file-signature"></i> Emitir Certificado</a>
+                    </li>
+                    <li>
+                        <a href="#verifySection"><i class="fas fa-search"></i> Verificar Hash</a>
+                    </li>
+                    <li id="adminMenuItem" style="display: none;">
+                        <a href="#adminSection"><i class="fas fa-plus-square"></i> Expansão de Rede</a>
+                    </li>
                 </ul>
             </nav>
 
@@ -34,7 +44,7 @@
                     <i class="fas fa-university"></i>
                     <span id="userNameDisplay">Instituição</span>
                 </div>
-                <button onclick="logoutInstituicao()" class="btn-logout">
+                <button onclick="logout()" class="btn-logout" title="Sair do sistema">
                     <i class="fas fa-sign-out-alt"></i> Sair do Sistema
                 </button>
             </div>
@@ -56,148 +66,161 @@
             <section id="loginSection" class="glass-card login-center">
                 <div class="card-header">
                     <h2>Acesso Institucional</h2>
-                    <p>Entre com suas credenciais para gerenciar a emissão de certificados.</p>
+                    <p>Valide suas credenciais para minerar registros.</p>
                 </div>
                 <form id="loginForm" class="form">
                     <div class="form-group">
-                        <label>Usuário</label>
-                        <input type="text" id="loginUser" placeholder="Seu usuário institucional" required>
+                        <label for="loginUser">Usuário</label>
+                        <input type="text" id="loginUser" name="loginUser" autocomplete="username" placeholder="Seu usuário master" required>
                     </div>
                     <div class="form-group">
-                        <label>Senha</label>
-                        <input type="password" id="loginPass" placeholder="••••••••" required>
+                        <label for="loginPass">Senha</label>
+                        <input type="password" id="loginPass" name="loginPass" autocomplete="current-password" placeholder="••••••••" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Entrar no Sistema</button>
                 </form>
-                <div id="loginResult" class="result"></div>
+                <div id="loginResult" class="result" style="display: none;"></div>
             </section>
 
-            <div id="dashboardStats" class="stats-grid" style="display: none;">
-                <div class="stat-card">
-                    <div class="stat-icon blue"><i class="fas fa-file-contract"></i></div>
-                    <div class="stat-data">
-                        <span class="stat-label">Total Emitido</span>
-                        <h3 id="statTotal" class="stat-value">0</h3>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon purple"><i class="fas fa-cube"></i></div>
-                    <div class="stat-data">
-                        <span class="stat-label">Blocos Minerados</span>
-                        <h3 id="statBlocks" class="stat-value">0</h3>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon green"><i class="fas fa-check-double"></i></div>
-                    <div class="stat-data">
-                        <span class="stat-label">Válidos na Rede</span>
-                        <h3 class="stat-value">100%</h3>
-                    </div>
-                </div>
-            </div>
-
-            <div class="action-grid" id="mainActions" style="display: none;">
+            <div id="dashboardContent" style="display: none;">
                 
-                <section id="registerSection" class="glass-card">
-                    <div class="card-header">
-                        <h2>Registrar Certificado</h2>
-                        <p>Os dados serão minerados e gravados na Blockchain.</p>
+                <section id="dashboardStats" class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-file-contract"></i></div>
+                        <div class="stat-data">
+                            <span class="stat-label">Total Emitido</span>
+                            <h3 id="statTotal" class="stat-value">0</h3>
+                        </div>
                     </div>
-                    <form id="registerForm" class="form" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label>Nome do Aluno</label>
-                            <input type="text" name="student_name" placeholder="Ex: José Antônio Ramos" required>
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="fas fa-cube"></i></div>
+                        <div class="stat-data">
+                            <span class="stat-label">Blocos Minerados</span>
+                            <h3 id="statBlocks" class="stat-value">0</h3>
                         </div>
-                        <div class="form-group">
-                            <label>Nome do Curso</label>
-                            <input type="text" name="course" placeholder="Ex: Engenharia de Computação" required>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-check-double"></i></div>
+                        <div class="stat-data">
+                            <span class="stat-label">Status da Rede</span>
+                            <h3 class="stat-value">100% Imutável</h3>
                         </div>
-                        <div class="form-group">
-                            <label>Arquivo do Diploma (PDF/PNG)</label>
-                            <div class="file-drop-area">
-                                <input type="file" name="file" id="file" required>
-                                <span class="file-msg">Arraste ou clique para selecionar</span>
+                    </div>
+                </section>
+
+                <div class="action-grid" id="mainActions">
+                    
+                    <section id="registerSection" class="glass-card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-pen-fancy"></i> Registrar Certificado</h2>
+                            <p>Assine digitalmente o documento para a rede.</p>
+                        </div>
+                        <form id="registerForm" class="form" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="student_name">Nome do Aluno</label>
+                                <input type="text" id="student_name" name="student_name" placeholder="Nome Completo" required>
                             </div>
-                        </div>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-hammer"></i> Garantir Autenticidade (Minerar)
-                        </button>
-                    </form>
-                    <div id="registerResult" class="result"></div>
-                </section>
+                            <div class="form-group">
+                                <label for="course">Nome do Curso</label>
+                                <input type="text" id="course" name="course" placeholder="Ex: Ciência da Computação" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Documento Original (PDF/PNG)</label>
+                                <div class="file-drop-area">
+                                    <input type="file" name="file" id="fileInput" accept=".pdf,.png,.jpg" required>
+                                    <span class="file-msg">Clique ou arraste o arquivo aqui</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="private_key">Sua Chave Privada (Assinatura)</label>
+                                <input type="password" id="private_key" name="private_key" placeholder="Insira sua chave hexadecimal" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-hammer"></i> Garantir Autenticidade
+                            </button>
+                        </form>
+                        <div id="registerResult" class="result" style="display: none;"></div>
+                    </section>
 
-                <section id="verifySection" class="glass-card">
+                    <section id="verifySection" class="glass-card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-shield-alt"></i> Verificar Autenticidade</h2>
+                            <p>Consulte a integridade de um certificado na rede.</p>
+                        </div>
+                        <div class="verify-container">
+                            <div class="form-group">
+                                <input type="text" id="hashInput" placeholder="Cole o código hash (SHA-256) aqui...">
+                            </div>
+                            <button class="btn btn-primary-alt" onclick="verifyCertificate()">
+                                <i class="fas fa-search"></i> Validar Documento
+                            </button>
+                        </div>
+                        <div id="verifyResult" class="result" style="display: none;"></div>
+                    </section>
+                </div>
+
+                <section id="adminSection" class="glass-card" style="display: none;">
                     <div class="card-header">
-                        <h2>Verificar Hash</h2>
-                        <p>Valide a integridade de qualquer certificado na rede.</p>
+                        <h2><i class="fas fa-network-wired"></i> Provisionar Nova Instituição</h2>
+                        <p>Adicione um novo nó emissor à infraestrutura TTLedger.</p>
                     </div>
-                    <div class="verify-container">
+                    <form id="adminForm" class="form-row">
                         <div class="form-group">
-                            <input type="text" id="hashInput" placeholder="Cole o Hash criptográfico...">
+                            <label for="instName">Nome Instituição</label>
+                            <input type="text" id="instName" name="instName" placeholder="Ex: Universidade XYZ" required>
                         </div>
-                        <button class="btn btn-primary-alt" onclick="verifyCertificate()">
-                            <i class="fas fa-search"></i> Verificar
-                        </button>
-                    </div>
-                    <div id="verifyResult" class="result"></div>
+                        <div class="form-group">
+                            <label for="instUser">Usuário Master</label>
+                            <input type="text" id="instUser" name="instUser" placeholder="admin_universidade" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="instPass">Senha Provisória</label>
+                            <input type="password" id="instPass" name="instPass" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Gerar Credenciais</button>
+                    </form>
+                    <div id="adminResult" class="result" style="display: none;"></div>
                 </section>
-            </div>
 
-            <section id="adminSection" class="glass-card" style="display: none;">
-                <div class="card-header">
-                    <h2>Expandir Rede TTLedger</h2>
-                    <p>Provisione novas chaves para universidades parceiras.</p>
-                </div>
-                <form id="adminForm" class="form-row">
-                    <div class="form-group">
-                        <label>Instituição</label>
-                        <input type="text" id="instName" placeholder="Ex: UFPE" required>
+                <section class="glass-card table-section">
+                    <div class="table-header">
+                        <div class="header-left">
+                            <h2>Livro de Registros (Ledger)</h2>
+                            <span id="countCerts" class="badge">0 certificados</span>
+                        </div>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar por nome ou curso...">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Usuário</label>
-                        <input type="text" id="instUser" placeholder="admin_ufpe" required>
+                    
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Curso / Instituição</th>
+                                    <th>Data de Registro</th>
+                                    <th>Hash de Origem</th>
+                                    <th style="text-align: right;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboardBody">
+                                </tbody>
+                        </table>
                     </div>
-                    <div class="form-group">
-                        <label>Senha Provisória</label>
-                        <input type="password" id="instPass" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Criar Credenciais</button>
-                </form>
-                <div id="adminResult" class="result"></div>
-            </section>
+                </section>
 
-            <section class="glass-card table-section">
-                <div class="table-header">
-                    <div class="header-left">
-                        <h2>Registros Recentes</h2>
-                        <span id="countCerts" class="badge">0 certificados</span>
-                    </div>
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar aluno ou hash...">
-                    </div>
-                </div>
-                
-                <div class="table-responsive">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Aluno</th>
-                                <th>Curso / Instituição</th>
-                                <th>Data Emissão</th>
-                                <th>Código Hash</th>
-                                <th style="text-align: right;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dashboardBody">
-                            </tbody>
-                    </table>
-                </div>
-            </section>
-
-        </main>
+            </div> </main>
     </div>
 
     <script src="scripts.js"></script>
+    <script>
+        // UX Helper: Mostra o nome do arquivo selecionado no drop area
+        document.getElementById('fileInput')?.addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || "Clique ou arraste o arquivo aqui";
+            document.querySelector('.file-msg').innerText = fileName;
+        });
+    </script>
 </body>
 </html>

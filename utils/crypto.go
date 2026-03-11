@@ -7,28 +7,35 @@ import (
 	"fmt"
 )
 
-// GenerateInstitutionKeys agora retorna chaves em formato HEX para salvar no Postgres
+// GenerateInstitutionKeys gera o par de chaves Ed25519.
+// A pública vai para o banco, a privada é mostrada uma única vez ao admin.
 func GenerateInstitutionKeys() (string, string, error) {
 	pub, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		return "", "", fmt.Errorf("falha ao gerar chaves criptograficas: %v", err)
 	}
 
-	// Convertemos para Hexadecimal para facilitar o armazenamento no banco
+	// Retornamos em Hex para facilitar o "copiar e colar" do usuário e o armazenamento no Postgres
 	return hex.EncodeToString(pub), hex.EncodeToString(priv), nil
 }
 
-// SignData assina o hash do certificado usando a chave privada (em HEX) da instituição
+// SignData assina o hash do certificado. 
+// A privateKeyHex deve vir do formulário preenchido pela instituição (volátil).
 func SignData(hash string, privateKeyHex string) (string, error) {
-	// 1. Converte a chave privada de Hex para Bytes
+	// 1. Decodifica a chave privada Hex para o formato original (bytes)
 	privBytes, err := hex.DecodeString(privateKeyHex)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("chave privada invalida: %v", err)
 	}
 
-	// 2. Assina os dados (o hash do arquivo)
+	// O Ed25519 do Go espera que a chave privada tenha 64 bytes (seed + pub)
+	if len(privBytes) != ed25519.PrivateKeySize {
+		return "", fmt.Errorf("tamanho da chave privada incorreto")
+	}
+
+	// 2. Gera a assinatura digital sobre o hash do arquivo
 	signature := ed25519.Sign(privBytes, []byte(hash))
 
-	// 3. Retorna a assinatura em Hex para ser gravada na Blockchain e no DB
+	// 3. Retorna a assinatura em Hex para o registro na Blockchain
 	return hex.EncodeToString(signature), nil
 }
