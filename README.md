@@ -1,131 +1,236 @@
-🛡️ TTLedger: Blockchain-Based Certificate & AI Audit System
-O TTLedger é uma infraestrutura de rede blockchain privada projetada para a emissão, gestão e auditoria de certificados acadêmicos. O sistema utiliza uma arquitetura Non-Custodial, garantindo que as instituições possuam total controle sobre suas chaves criptográficas, aliada a uma camada de Inteligência Artificial para monitoramento de integridade da rede.
+🔗 TTLedger
+Blockchain-Based Certificate & AI Audit System
 
-🚀 Tecnologias Core
-Backend: Go (Golang) - Alta performance e concorrência para o nó da rede.
+TTLedger é uma infraestrutura de blockchain privada projetada para emissão, gestão e auditoria de certificados acadêmicos.
 
-Blockchain: Estrutura de blocos encadeados com hashing SHA-256 e assinaturas ECDSA.
+A plataforma utiliza uma arquitetura Non-Custodial, garantindo que as instituições mantenham controle total sobre suas chaves criptográficas, combinada com uma camada de Inteligência Artificial para auditoria e monitoramento de integridade da rede.
 
-IA de Auditoria: Google Gemini 1.5 Flash - Análise proativa de padrões e detecção de fraudes.
+O objetivo é combater fraudes em diplomas e certificados educacionais, oferecendo verificação pública, segura e instantânea.
 
-Database: PostgreSQL - Persistência robusta de estados e logs.
+🚀 Tecnologias Utilizadas
+Backend
 
-Frontend: HTML5, CSS3 e JavaScript Vanilla (Foco em performance e zero dependências pesadas).
+Golang (Go) — Alta performance e concorrência para o nó da rede
 
-Segurança: Autenticação via JWT com controle de acesso baseado em funções (RBAC).
+PostgreSQL — Persistência de dados, estados e logs
+
+Blockchain
+
+Estrutura de blocos encadeados
+
+Hashing SHA-256
+
+Assinaturas digitais ECDSA
+
+Sistema de mineração de blocos
+
+Inteligência Artificial
+
+Google Gemini 1.5 Flash
+
+Análise proativa da blockchain
+
+Detecção de padrões suspeitos e fraudes
+
+Frontend
+
+HTML5
+
+CSS3
+
+JavaScript Vanilla
+
+Foco em:
+
+performance
+
+simplicidade
+
+zero dependências pesadas
+
+Segurança
+
+Autenticação via JWT
+
+RBAC (Role-Based Access Control)
+
+Headers de segurança contra ataques web
 
 ✨ Funcionalidades Principais
-1. Governança & Expansão de Rede
-Admin Console: O administrador da rede pode provisionar novas instituições.
+🏛️ Governança e Expansão de Rede
+Admin Console
 
-Provisionamento On-the-fly: Geração dinâmica de pares de chaves (Pública/Privada) para novos nós, garantindo a descentralização da confiança.
+O administrador da rede pode provisionar novas instituições educacionais dentro da rede blockchain.
 
-2. Gestão de Certificados
-Emissão Criptográfica: Cada certificado é minerado em um bloco com o hash do bloco anterior.
+Provisionamento On-the-Fly
 
-Non-Custodial: As chaves privadas nunca são armazenadas em texto claro, garantindo a soberania da instituição emissora.
+O sistema gera pares de chaves criptográficas (Pública/Privada) dinamicamente para novos nós da rede.
 
-Verificação Instantânea: Validação pública de autenticidade através do hash do certificado.
+Isso garante:
 
-3. Auditoria Inteligente (IA Gemini)
-Detecção de Anomalias: IA integrada que analisa o fluxo de blocos em busca de comportamentos suspeitos (ex: emissões em massa, nomes inconsistentes).
+descentralização
 
-Relatórios em Tempo Real: Dashboard de auditoria que traduz dados técnicos da blockchain em insights acionáveis para o administrador.
+segurança
 
-🛠️ Arquitetura do Projeto
-Plaintext
+autonomia institucional
+
+🎓 Gestão de Certificados
+Emissão Criptográfica
+
+Cada certificado emitido é registrado em um bloco da blockchain, contendo:
+
+hash do certificado
+
+hash do bloco anterior
+
+assinatura digital da instituição emissora
+
+Arquitetura Non-Custodial
+
+As chaves privadas nunca são armazenadas em texto claro, garantindo soberania criptográfica das instituições.
+
+Verificação Pública
+
+Qualquer pessoa pode verificar a autenticidade de um certificado através do hash registrado na blockchain.
+
+🤖 Auditoria Inteligente com IA
+
+O TTLedger possui uma camada de auditoria baseada em IA para monitoramento contínuo da integridade da rede.
+
+Detecção de Anomalias
+
+A IA analisa padrões como:
+
+emissões massivas de certificados
+
+inconsistência em nomes ou instituições
+
+padrões suspeitos de atividade
+
+Relatórios em Tempo Real
+
+Dashboard administrativo que traduz dados técnicos da blockchain em insights acionáveis para o administrador da rede.
+
+🏗️ Arquitetura do Projeto
 /ttledger
-  ├── /api             # Handlers HTTP e definição de rotas
-  ├── /blockchain      # Lógica core da corrente e mineração
-  ├── /database        # Migrations e conexão com Postgres
-  ├── /internal/ia     # Motor de integração com Google Gemini
-  ├── /utils           # Ferramentas criptográficas e auxiliares
-  ├── /web             # Interface administrativa e de verificação
-  ├── main.go          # Ponto de entrada do sistema
-  └── .env             # Variáveis sensíveis (API Keys, DB URLs)
-🔧 Configuração e Instalação
-Clone o repositório:
+│
+├── api/                # Handlers HTTP e definição de rotas
+├── blockchain/         # Lógica core da blockchain e mineração
+├── database/           # Conexão e migrations do PostgreSQL
+├── internal/
+│   └── ia/             # Integração com Google Gemini
+│
+├── utils/              # Funções criptográficas e utilitários
+├── web/                # Interface administrativa e verificação
+│
+├── main.go             # Ponto de entrada da aplicação
+└── .env                # Variáveis de ambiente
 
-Bash
-git clone https://github.com/seu-usuario/ttledger.git
-Configure as Variáveis de Ambiente (.env):
-Crie um arquivo .env na raiz com:
 
-Snippet de código
-GEMINI_API_KEY=sua_chave_aqui
-DB_URL=postgres://user:pass@localhost:5432/cert_chain?sslmode=disable
-PORT=8080
-Instale as dependências e rode o projeto:
-
-Bash
-go mod tidy
-go run main.go
 🛡️ Segurança e Privacidade
-O projeto segue as diretrizes de segurança para redes privadas:
 
-Headers de Segurança: Proteção contra ataques comuns de web.
+O projeto segue boas práticas de segurança para redes privadas:
 
-Segregação de Roles: Distinção clara entre o que um Administrador de Rede e uma Instituição podem realizar.
+Headers de Segurança
 
-Auditoria Imutável: Uma vez minerado, o registro é permanente, e qualquer tentativa de manipulação é detectada pela IA.
+Proteção contra ataques comuns da web como:
+
+XSS
+
+Clickjacking
+
+Content Injection
+
+Controle de Acesso (RBAC)
+
+Separação clara entre:
+
+Administrador da Rede
+
+Instituições emissoras
+
+Auditoria Imutável
+
+Após minerado, um bloco torna-se imutável.
+
+Qualquer tentativa de manipulação:
+
+altera o hash
+
+quebra a cadeia
+
+é detectada pela camada de auditoria.
 
 📈 Roadmap de Evolução
-[x] Implementação do Nó Core e Blockchain
+Implementado
 
-[x] Sistema de Expansão de Rede (Admin)
+ Nó core da blockchain
 
-[x] Integração com IA Gemini para Auditoria
+ Estrutura de blocos encadeados
 
-[ ] Implementação de Smart Contracts para renovação automática
+ Sistema de expansão de rede
 
-[ ] App Mobile para carteira de certificados do aluno
+ Integração com IA Gemini para auditoria
 
-# 🌍 Impacto
+Em Desenvolvimento
 
-Benefícios esperados:
+ Smart Contracts para renovação automática de certificados
 
-* redução de fraude educacional
-* confiança digital em diplomas
-* verificação instantânea de credenciais
-* interoperabilidade entre instituições
+ Identidade descentralizada para alunos
 
----
+ API pública de verificação
 
-# 👤 Autor
+ App mobile para carteira de certificados
 
-**José Antonio Ramos da Silva**
+🌍 Impacto Esperado
+
+O TTLedger busca resolver problemas críticos no sistema educacional:
+
+Redução de fraudes em diplomas
+
+Confiança digital em credenciais acadêmicas
+
+Verificação instantânea de certificados
+
+Interoperabilidade entre instituições
+
+👤 Autor
+
+José Antonio Ramos da Silva
 Estudante de Engenharia da Computação
 
 Interesses:
 
-* blockchain
-* inteligência artificial
-* segurança digital
-* infraestrutura distribuída
+Blockchain
 
----
+Inteligência Artificial
 
-# 📜 Licença
+Segurança Digital
 
-MIT License
+Infraestrutura Distribuída
 
----
+GitHub
+https://github.com/JoseAntonioRx7
 
-# 🤝 Contribuição
+📜 Licença
+
+Este projeto está sob a licença MIT License.
+
+🤝 Contribuição
 
 Contribuições são bem-vindas.
 
 Você pode colaborar com:
 
-* melhorias no código
-* auditoria de segurança
-* novas funcionalidades
-* integrações educacionais
+melhorias no código
 
----
+auditoria de segurança
 
-# 📬 Contato
+novas funcionalidades
 
-GitHub:
+integrações educacionais
 
+📬 Contato
+
+GitHub
 https://github.com/JoseAntonioRx7
