@@ -1,0 +1,16 @@
+# Variáveis de Ambiente (Segurança)
+.env
+
+# Binários e Executáveis
+*.exe
+*.exe~
+__debug_bin
+bin/
+
+# Arquivos do Sistema e IDE
+.vscode/
+.idea/
+.DS_Store
+
+# PDFs gerados (para não sujar o repositório)
+pdfs/
