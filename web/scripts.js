@@ -148,7 +148,7 @@ async function handleLogin(e) {
         });
 
         localStorage.setItem("ttledger_token", data.token);
-        localStorage.setItem("ttledger_user", username);
+        localStorage.setItem("ttledger_user", data.role);
         location.reload();
     } catch (err) {
         UI.showResult("loginResult", err.message, true);
@@ -193,6 +193,48 @@ async function loadDashboard() {
     } catch (err) { console.error("Erro ao carregar lista:", err); }
 }
 
+async function handleRegisterInstitution(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector("button");
+    const token = localStorage.getItem("ttledger_token");
+    UI.setLoading(btn, true, "Provisionando Nó...");
+
+    try {
+        const payload = {
+            name: e.target.instName.value,
+            username: e.target.instUser.value,
+            password: e.target.instPass.value
+        };
+
+        const data = await safeFetch("admin/register-institution", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}` 
+            },
+            body: JSON.stringify(payload)
+        });
+
+        UI.showResult("adminResult", `
+    <div style="background: rgba(0, 255, 136, 0.1); padding: 15px; border-radius: 8px; border: 1px solid #00ff88; margin-top: 15px;">
+        <p style="color: #00ff88; font-weight: bold; margin-bottom: 5px;">✅ Instituição Provisionada!</p>
+        <p style="font-size: 0.85rem; color: #ccc; margin-bottom: 10px;">Guarde esta Chave Privada em local seguro (ela não será mostrada novamente):</p>
+        <code id="newPrivKey" style="display: block; background: #000; padding: 12px; border-radius: 4px; word-break: break-all; color: #ffcc00; font-family: monospace; border: 1px solid #333;">${data.private_key}</code>
+        <button type="button" class="btn-view" onclick="navigator.clipboard.writeText('${data.private_key}'); alert('Chave Privada copiada!')" style="margin-top: 10px; width: 100%; cursor: pointer; background: #00ff88; color: #000; border: none; padding: 8px; font-weight: bold; border-radius: 4px;">
+            <i class="fas fa-copy"></i> COPIAR CHAVE PRIVADA
+        </button>
+    </div>
+`);
+        e.target.reset();
+
+        
+    } catch (err) {
+        UI.showResult("adminResult", err.message, true);
+    } finally {
+        UI.setLoading(btn, false, "Gerar Credenciais");
+    }
+}
+
 /**
  * RESOLUÇÃO: Tabela organizada com links de visualização
  */
@@ -234,6 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Listeners de Formulários
     document.getElementById("loginForm")?.addEventListener("submit", handleLogin);
     document.getElementById("registerForm")?.addEventListener("submit", handleRegisterCertificate);
+    document.getElementById("adminForm")?.addEventListener("submit", handleRegisterInstitution);
     
     // Global Logout
     window.logout = () => {
@@ -243,4 +286,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Vincula a função de verificação ao objeto window para o HTML acessar
     window.verifyCertificate = verifyCertificate;
+
+    // Adicione isso logo abaixo dos outros listeners
+document.querySelectorAll('.sidebar-nav a').forEach(link => {
+    link.addEventListener('click', (e) => {
+        const targetId = e.currentTarget.getAttribute('href').replace('#', '');
+        // Ajuste para mapear o href do HTML para o ID que o showTab espera
+        if (targetId === 'adminSection') {
+            showTab('admin');
+        } else if (targetId === 'dashboard') {
+            showTab('dashboard');
+        }
+    });
+});
 });

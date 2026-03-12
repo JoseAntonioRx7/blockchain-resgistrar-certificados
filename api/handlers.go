@@ -71,29 +71,38 @@ func RegisterInstitutionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	if setupCORS(&w, r) { return }
+    if setupCORS(&w, r) { return }
 
-	var data struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-	
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		sendJSON(w, http.StatusBadRequest, map[string]string{"error": "JSON inválido"})
-		return
-	}
+    var data struct {
+        Username string `json:"username"`
+        Password string `json:"password"`
+    }
+    
+    if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+        sendJSON(w, http.StatusBadRequest, map[string]string{"error": "JSON inválido"})
+        return
+    }
 
-	var storedPassword string
-	err := database.DB.QueryRow("SELECT password_hash FROM institutions WHERE username = $1", data.Username).Scan(&storedPassword)
+    var storedPassword string
+    var role string // <--- Adicione esta variável para capturar o papel do usuário
+    
+    // Ajuste o SELECT para buscar o password E o role (ou is_admin)
+    err := database.DB.QueryRow("SELECT password_hash, role FROM institutions WHERE username = $1", data.Username).Scan(&storedPassword, &role)
 
-	// O Erro 401 acontece se esta verificação falhar
-	if err != nil || data.Password != storedPassword {
-		sendJSON(w, http.StatusUnauthorized, map[string]string{"error": "Usuário ou senha incorretos"})
-		return
-	}
+    if err != nil || data.Password != storedPassword {
+        sendJSON(w, http.StatusUnauthorized, map[string]string{"error": "Usuário ou senha incorretos"})
+        return
+    }
 
-	token, _ := utils.GenerateJWT(data.Username)
-	sendJSON(w, http.StatusOK, map[string]string{"token": token})
+    // 2. Gere o token (idealmente passando o role para dentro do JWT se puder)
+    token, _ := utils.GenerateJWT(data.Username)
+
+    // 3. ENVIE O ROLE NA RESPOSTA
+    // É isso que o JavaScript vai usar para esconder ou mostrar o menu
+    sendJSON(w, http.StatusOK, map[string]interface{}{
+        "token": token,
+        "role":  role, // Retorna "admin" ou "institution"
+    })
 }
 
 func VerifyHandler(w http.ResponseWriter, r *http.Request) {
