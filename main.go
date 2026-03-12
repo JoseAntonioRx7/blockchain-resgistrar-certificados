@@ -7,9 +7,16 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"github.com/joho/godotenv"
+	"cert-chain/internal/ai"
+	"context"
 )
 
+
 func main() {
+
+	godotenv.Load() // Carrega as variáveis do .env para o ambiente
+
 	// 1. Inicializa a infraestrutura (Banco de Dados)
 	database.InitDB()
 
@@ -42,8 +49,22 @@ func main() {
 	fmt.Println("Segurança: Non-Custodial ativa")
 	fmt.Println("================================================")
 
+	// Inicializa o Core da IA (Precisa do contexto)
+	ctx := context.Background()
+	aiCore := ai.NewAICore(ctx)
+
+	// Nova rota de Auditoria
+	http.HandleFunc("/api/admin/audit-network", api.AuditHandler(database.DB, aiCore))
+
+	// Dentro da func main(), antes do ListenAndServe:
+	ctx = context.Background()
+	aiCore = ai.NewAICore(ctx) // 'ai' é o nome que está no seu import
+
+	// Registra a rota de auditoria usando o Handler que acabamos de criar
+	http.HandleFunc("/api/admin/audit-network", api.AuditNetworkHandler(database.DB, aiCore))
+
 	// Inicia o servidor usando o DefaultServeMux (nil)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		fmt.Printf("Erro fatal no servidor: %v\n", err)
 	}
-}
+}			

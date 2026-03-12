@@ -4,10 +4,12 @@ import (
 	"cert-chain/blockchain"
 	"cert-chain/database"
 	"cert-chain/utils"
+    "cert-chain/internal/ai"
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
-	"fmt"
 )
 
 var Chain *blockchain.Blockchain
@@ -228,4 +230,85 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
         "message": "Certificado minerado com sucesso!",
         "hash":    hash,
     })
+}
+
+func AuditHandler(db *sql.DB, aiCore *ai.AICore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// 1. Verificar se é Admin (Segurança)
+		// Aqui você usaria sua lógica de role que já validamos antes
+
+		// 2. Buscar dados do banco para a IA analisar
+		rows, err := db.Query("SELECT student_name, course, institution, timestamp FROM certificates ORDER BY timestamp DESC LIMIT 20")
+		if err != nil {
+			http.Error(w, "Erro ao buscar dados", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var certs []map[string]interface{}
+		for rows.Next() {
+			var name, course, inst string
+			var ts int64
+			rows.Scan(&name, &course, &inst, &ts)
+			certs = append(certs, map[string]interface{}{
+				"aluno": name, "curso": course, "inst": inst, "data": ts,
+			})
+		}
+
+		// 3. Chamar a IA (O método que criamos no internal/ai)
+		analysis, err := aiCore.AnalyzeCertificates(r.Context(), certs)
+		if err != nil {
+			http.Error(w, "Erro na análise da IA: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// 4. Retornar o veredito
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"analysis": analysis})
+	}
+}
+
+// AuditNetworkHandler busca os certificados e pede a análise do Gemini
+func AuditNetworkHandler(db *sql.DB, aiCore *ai.AICore) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        // 1. Coleta os dados recentes para a IA analisar
+        // Vamos pegar os últimos 15 registros para não estourar o limite de tokens grátis
+        rows, err := db.Query(`
+            SELECT student_name, course, institution, timestamp 
+            FROM certificates 
+            ORDER BY id DESC LIMIT 15
+        `)
+        if err != nil {
+            http.Error(w, "Erro ao ler dados para auditoria", http.StatusInternalServerError)
+            return
+        }
+        defer rows.Close()
+
+        var logs []map[string]interface{}
+        for rows.Next() {
+            var name, course, inst string
+            var ts int64
+            rows.Scan(&name, &course, &inst, &ts)
+            logs = append(logs, map[string]interface{}{
+                "aluno": name, 
+                "curso": course, 
+                "instituicao": inst, 
+                "data_unix": ts,
+            })
+        }
+
+        // 2. Chama o "Cérebro" da IA
+        // r.Context() garante que se o usuário fechar o navegador, a IA para de processar
+        analysis, err := aiCore.AnalyzeCertificates(r.Context(), logs)
+        if err != nil {
+            http.Error(w, "Falha na análise da IA: "+err.Error(), http.StatusInternalServerError)
+            return
+        }
+
+        // 3. Responde para o Frontend
+        w.Header().Set("Content-Type", "application/json")
+        json.NewEncoder(w).Encode(map[string]string{
+            "analysis": analysis,
+        })
+    }
 }
