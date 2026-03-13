@@ -1,447 +1,106 @@
-# 🔗 TTLedger
+# 🔗 TTLedger – Blockchain Certificate Infrastructure
 
-### Trusted Transcript Ledger
+![go](https://img.shields.io/badge/go-golang-blue)
+![status](https://img.shields.io/badge/status-em%20desenvolvimento-green)
+![license](https://img.shields.io/badge/license-MIT-blue)
 
-> **Infraestrutura descentralizada para autenticação e verificação de certificados educacionais utilizando blockchain e criptografia digital.**
+Uma infraestrutura de **blockchain privada para emissão e verificação de certificados acadêmicos**, desenvolvida em **Go (Golang)**.
 
----
+O sistema registra certificados em uma cadeia de blocos **imutável**, utilizando **criptografia SHA-256 e assinaturas digitais**, com uma camada adicional de **Inteligência Artificial para auditoria e monitoramento da rede**.
 
-# 📋 Visão Geral
+Projeto desenvolvido para aprofundar conhecimentos práticos em:
 
-**TTLedger** é uma plataforma baseada em **blockchain** projetada para registrar, autenticar e verificar **certificados educacionais e credenciais acadêmicas** de forma segura, transparente e imutável.
-
-O projeto busca resolver um problema crescente no mercado educacional global: **fraudes em diplomas e certificados**.
-
-A solução combina:
-
-* blockchain própria desenvolvida em **Golang**
-* assinaturas criptográficas **Ed25519**
-* banco de dados **PostgreSQL**
-* interface web de verificação pública
-
-O objetivo é construir uma **infraestrutura global confiável para verificação de credenciais educacionais**.
+- Tecnologias Blockchain e Web3
+- Criptografia Aplicada (Non-Custodial)
+- Sistemas Distribuídos
+- Arquitetura Backend em Go
+- Integração de IA Generativa em Infraestrutura
 
 ---
 
-# 🚨 Problema
+# 🚀 Funcionalidades Implementadas
 
-Fraudes em certificados e diplomas são um problema mundial.
+- **Arquitetura Non-Custodial:** A infraestrutura não retém as chaves privadas. As instituições emissoras possuem total soberania sobre suas credenciais de assinatura.
 
-Principais desafios atuais:
+- **Estrutura de Blockchain:** Implementação de blocos encadeados contendo `Hash`, `PrevHash`, `Timestamp` e `Data`.
 
-* falsificação de diplomas
-* certificados digitais manipulados
-* verificação manual por universidades
-* processos lentos de autenticação
-* baixa interoperabilidade entre instituições
+- **Mineração de Blocos:** Algoritmo de **Proof of Work (PoW)** utilizado para validação e adição de novos blocos à rede.
 
-Empresas e universidades frequentemente precisam **verificar manualmente credenciais educacionais**, gerando:
+- **Registro de Certificados:** Cada certificado é convertido em um **hash criptográfico** e armazenado na blockchain.
 
-* atrasos
-* custos administrativos
-* risco de fraude
+- **Assinaturas Digitais:** Utilização de **ECDSA** para autenticação criptográfica da instituição emissora.
 
----
+- **API REST Integrada:**
 
-# 💡 Solução
+```text
+GET /blocks
+Retorna todos os blocos validados da blockchain.
 
-O **TTLedger** cria um **registro descentralizado e imutável de certificados educacionais**.
+POST /certificates
+Registra e minera um novo certificado na rede.
 
-Cada certificado gera um **hash criptográfico único** que é registrado na blockchain.
+GET /api/admin/audit-network
+> Aciona o Oráculo de IA para analisar os últimos registros e gerar um relatório de segurança em tempo real.
+> Validação da Blockchain: Mecanismo que verifica a integridade da cadeia garantindo consistência matemática entre os blocos.
+> Auditoria com Inteligência Artificial: Integração com a API do Google Gemini (1.5 Flash) para análise de padrões suspeitos e detecção de anomalias na emissão de certificados.
 
-Esse registro permite que qualquer pessoa verifique a autenticidade de um certificado sem depender da instituição emissora.
+⚙️ Tecnologias:
+Linguagem: Go (Golang)
 
-Principais características:
+> Blockchain
+> Hashing SHA-256
+> Assinaturas digitais ECDSA
+> Proof of Work (PoW)
+> Banco de Dados
+> PostgreSQL
+> Inteligência Artificial
+> Google Gemini 1.5 Flash API (Oráculo de Segurança)
+> Arquitetura
+> REST API
+> RBAC (Role-Based Access Control) com JWT
 
-* 🔐 **Prova criptográfica de autenticidade**
-* ⛓️ **Registro imutável em blockchain**
-* 🌍 **Verificação pública e descentralizada**
-* 🏫 **Assinatura digital institucional**
-* 📄 **Validação instantânea de certificados**
+----------
 
----
+📦 Estrutura do Projeto:
 
-# ⚙️ Como Funciona
-
-### Fluxo de Registro de Certificado
-
-```
-1. Instituição emite certificado
-   ↓
-2. Sistema gera hash SHA-256 do documento
-   ↓
-3. Instituição assina digitalmente com chave privada (Ed25519)
-   ↓
-4. Certificado registrado na blockchain
-   ↓
-5. Bloco minerado utilizando Proof of Work
-   ↓
-6. Registro torna-se permanente
-```
-
----
-
-### Fluxo de Verificação
-
-```
-1. Usuário fornece o hash do certificado
-   ↓
-2. Sistema consulta a blockchain
-   ↓
-3. Verifica integridade do bloco
-   ↓
-4. Retorna dados do certificado registrado
-```
-
-Resultado:
-
-```
-✔ Certificado válido
-ou
-✖ Certificado inválido
-```
-
----
-
-# 🏗️ Arquitetura do Sistema
-
-```
-┌──────────────────────────────────────┐
-│        Frontend (HTML / JS)          │
-│     Dashboard + Verificação Web      │
-└───────────────┬──────────────────────┘
-                │
-            HTTP / REST
-                │
-┌───────────────▼──────────────────────┐
-│         Backend API (Go)             │
-│     Registro | Verificação | List    │
-└───────────────┬──────────────────────┘
-                │
-     ┌──────────┼───────────┬──────────┐
-     │          │           │          │
-┌────▼────┐ ┌───▼────┐ ┌────▼────┐ ┌───▼────────┐
-│Blockchain│ │Database│ │ Utils  │ │Cryptography│
-│ Engine   │ │Postgres│ │Helper  │ │Ed25519     │
-└──────────┘ └────────┘ └────────┘ └────────────┘
-```
-
----
-
-# 🧩 Componentes do Sistema
-
-## Blockchain Engine
-
-Responsável por:
-
-* criação de blocos
-* validação da cadeia
-* mineração (Proof of Work)
-* registro imutável de transações
-
-Arquivos principais:
-
-```
-/blockchain
-  block.go
-  chain.go
-  pow.go
-  transaction.go
-```
-
----
-
-## API Backend
-
-Camada responsável por expor funcionalidades via REST.
-
-Endpoints principais:
-
-```
-POST /register
-GET /verify
-GET /list
-```
-
-Arquivos:
-
-```
-/api
-  handlers.go
-  routes.go
-```
-
----
-
-## Banco de Dados
-
-Persistência de certificados e blocos.
-
-Tecnologia:
-
-```
-PostgreSQL
-```
-
-Tabelas principais:
-
-* certificates
-* blocks
-
----
-
-## Utilitários
-
-Funções auxiliares do sistema:
-
-```
-/utils
-  crypto.go
-  hash.go
-  id.go
-```
-
-Responsáveis por:
-
-* assinatura digital
-* geração de hash
-* geração de IDs únicos
-
----
-
-# 📂 Estrutura do Projeto
-
-```
 ttledger/
-│
-├── main.go
-├── go.mod
-├── go.sum
-├── README.md
-│
-├── api/
-│   ├── handlers.go
-│   └── routes.go
-│
-├── blockchain/
-│   ├── block.go
-│   ├── chain.go
-│   ├── pow.go
-│   └── transaction.go
-│
-├── database/
-│   └── db.go
-│
-├── utils/
-│   ├── crypto.go
-│   ├── hash.go
-│   └── id.go
-│
-└── web/
-    ├── index.html
-    ├── scripts.js
-    └── style.css
-```
 
----
+api/            # Rotas, middlewares e handlers HTTP
+blockchain/     # Lógica core da blockchain, blocos e mineração
+database/       # Conexão e migrations PostgreSQL
+internal/ia/    # Integração e prompts para a IA (Gemini)
+utils/          # Funções criptográficas e auxiliares
+web/            # Interface administrativa e dashboard
+main.go         # Entry point da aplicação
 
-# 🔐 Segurança
+🔐 Segurança:
+O sistema implementa mecanismos de segurança focados em descentralização de confiança:
 
-O TTLedger utiliza múltiplas camadas de segurança.
+> Abordagem Non-Custodial: Chaves privadas nunca trafegam em texto claro no banco de dados.
+> Hashing SHA-256: Garantia de integridade dos dados registrados.
+> Assinaturas digitais ECDSA: Autenticação inquestionável das instituições emissoras.
+> Estrutura imutável de blocos: Impede a manipulação de históricos passados.
+> Auditoria Inteligente (IA): Detecção proativa de comportamentos de emissão anômalos.
 
-| Tecnologia    | Função                      |
-| ------------- | --------------------------- |
-| SHA-256       | Integridade de certificados |
-| Ed25519       | Assinatura digital          |
-| Proof of Work | Imutabilidade da blockchain |
-| Hash chaining | Integridade dos blocos      |
+📈 Roadmap:
 
-Garantias:
+> Implementar rede P2P entre instituições
+> Implementar identidade descentralizada (DID)
+> Criar API pública de verificação de certificados
+> Desenvolver carteira digital de certificados para alunos
 
-* certificados não podem ser alterados
-* registros são permanentes
-* verificação pública e transparente
-
----
-
-# 📡 API REST
-
-### Registrar Certificado
-
-```
-POST /register
-```
-
-Dados enviados:
-
-```
-student_name
-institution
-course
-file
-```
-
-Resposta:
-
-```
-{
- "message": "Certificado registrado",
- "hash": "...",
- "id": "..."
-}
-```
-
----
-
-### Verificar Certificado
-
-```
-GET /verify?hash=HASH
-```
-
-Resposta:
-
-```
-{
- "found": true,
- "student_name": "...",
- "institution": "...",
- "course": "...",
- "block_index": 1
-}
-```
-
----
-
-### Listar Certificados
-
-```
-GET /list
-```
-
----
-
-# 🚀 Como Executar
-
-### Pré-requisitos
-
-* Go 1.25+
-* PostgreSQL 12+
-* Git
-
----
-
-### Instalar dependências
-
-```
-go mod download
-go mod tidy
-```
-
----
-
-### Executar o projeto
-
-```
-go run main.go
-```
-
-Servidor disponível em:
-
-```
-http://localhost:8080
-```
-
----
-
-# 🎯 Roadmap
-
-### Phase 1 (MVP)
-
-* blockchain core
-* API REST
-* registro de certificados
-* verificação pública
-
-### Phase 2
-
-* autenticação institucional
-* dashboard administrativo
-* geração automática de QR Code
-
-### Phase 3
-
-* rede de nós distribuídos
-* integração com universidades
-* API pública
-
-### Phase 4
-
-* integração com blockchain pública
-* mobile app
-* identidade digital descentralizada
-
----
-
-# 💼 Visão de Negócio
-
-O TTLedger pode operar como **SaaS para instituições educacionais**.
-
-Possíveis modelos de receita:
-
-* taxa por certificado registrado
-* planos institucionais
-* API para recrutadores
-* auditoria de credenciais
-
----
-
-# 🌍 Impacto
-
-Benefícios esperados:
-
-* redução de fraude educacional
-* confiança digital em diplomas
-* verificação instantânea de credenciais
-* interoperabilidade entre instituições
-
----
-
-# 👤 Autor
-
-**José Antonio Ramos da Silva**
+👨‍💻 Autor
+José Antonio Ramos da Silva
 Estudante de Engenharia da Computação
 
 Interesses:
-
-* blockchain
-* inteligência artificial
-* segurança digital
-* infraestrutura distribuída
-
----
-
-# 📜 Licença
-
-MIT License
-
----
-
-# 🤝 Contribuição
-
-Contribuições são bem-vindas.
-
-Você pode colaborar com:
-
-* melhorias no código
-* auditoria de segurança
-* novas funcionalidades
-* integrações educacionais
-
----
-
-# 📬 Contato
+> Blockchain & Web3
+> Inteligência Artificial
+> Segurança Digital
+> Sistemas Distribuídos
 
 GitHub:
-
 https://github.com/JoseAntonioRx7
+
+📜 Licença
+MIT License
