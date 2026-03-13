@@ -13,4 +13,4 @@ bin/
 .DS_Store
 
 # PDFs gerados (para não sujar o repositório)
-pdfs
+pdfs/
