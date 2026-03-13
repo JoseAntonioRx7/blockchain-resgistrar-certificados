@@ -10,156 +10,35 @@ O sistema registra certificados em uma cadeia de blocos **imutável**, utilizand
 
 Projeto desenvolvido para aprofundar conhecimentos práticos em:
 
-- tecnologias blockchain
-- criptografia aplicada
-- sistemas distribuídos
-- arquitetura backend em Go
+- Tecnologias Blockchain e Web3
+- Criptografia Aplicada (Non-Custodial)
+- Sistemas Distribuídos
+- Arquitetura Backend em Go
+- Integração de IA Generativa em Infraestrutura
 
 ---
 
 # 🚀 Funcionalidades Implementadas
 
-- **Estrutura de Blockchain:**  
-  Implementação de blocos encadeados contendo `Hash`, `PrevHash`, `Timestamp` e `Data`.
+- **Arquitetura Non-Custodial:**
+  A infraestrutura não retém as chaves privadas. As instituições emissoras possuem total soberania sobre suas credenciais de assinatura.
 
-- **Mineração de Blocos:**  
-  Algoritmo de **Proof of Work (PoW)** utilizado para validação e adição de novos blocos.
+- **Estrutura de Blockchain:** Implementação de blocos encadeados contendo `Hash`, `PrevHash`, `Timestamp` e `Data`.
 
-- **Registro de Certificados:**  
-  Cada certificado é convertido em um **hash criptográfico** e armazenado na blockchain.
+- **Mineração de Blocos:** Algoritmo de **Proof of Work (PoW)** utilizado para validação e adição de novos blocos à rede.
 
-- **Assinaturas Digitais:**  
-  Utilização de **ECDSA** para autenticação da instituição emissora.
+- **Registro de Certificados:** Cada certificado é convertido em um **hash criptográfico** e armazenado na blockchain.
 
-- **API REST Integrada**
+- **Assinaturas Digitais:** Utilização de **ECDSA** para autenticação criptográfica da instituição emissora.
 
-```
+- **API REST Integrada:**
+
+```text
 GET /blocks
-Retorna todos os blocos da blockchain.
+Retorna todos os blocos validados da blockchain.
 
 POST /certificates
-Registra um novo certificado na rede.
-```
+Registra e minera um novo certificado na rede.
 
-- **Validação da Blockchain:**  
-  Mecanismo que verifica a integridade da cadeia garantindo consistência entre blocos.
-
-- **Auditoria com Inteligência Artificial:**  
-  Integração com **Google Gemini** para análise de padrões suspeitos na emissão de certificados.
-
----
-
-# ⚙️ Tecnologias
-
-- **Linguagem:** Go (Golang)
-
-- **Blockchain**
-  - Hashing SHA-256
-  - Assinaturas digitais ECDSA
-  - Proof of Work
-
-- **Banco de Dados**
-  - PostgreSQL
-
-- **Inteligência Artificial**
-  - Google Gemini API
-
-- **Arquitetura**
-  - REST API
-
----
-
-# 📦 Estrutura do Projeto
-
-```
-ttledger/
-
-api/            # Rotas e handlers HTTP
-blockchain/     # Lógica principal da blockchain
-database/       # Conexão e migrations PostgreSQL
-internal/ia/    # Integração com IA (Gemini)
-
-utils/          # Funções criptográficas
-web/            # Interface administrativa
-
-main.go         # Entry point da aplicação
-```
-
----
-
-# ⚙️ Como Executar
-
-### 1️⃣ Clone o repositório
-
-```bash
-git clone https://github.com/JoseAntonioRx7/ttledger.git
-```
-
-### 2️⃣ Acesse a pasta do projeto
-
-```bash
-cd ttledger
-```
-
-### 3️⃣ Configure as variáveis de ambiente
-
-Crie um arquivo `.env` na raiz do projeto:
-
-```
-GEMINI_API_KEY=sua_chave
-
-DB_URL=postgres://user:pass@localhost:5432/ttledger?sslmode=disable
-
-PORT=8080
-```
-
-### 4️⃣ Execute a aplicação
-
-```bash
-go mod tidy
-go run main.go
-```
-
----
-
-# 🔐 Segurança
-
-O sistema implementa mecanismos de segurança baseados em criptografia:
-
-- **Hashing SHA-256** para integridade dos dados
-- **Assinaturas digitais ECDSA** para autenticação das instituições
-- **Estrutura imutável de blocos** impedindo alterações históricas
-- **Auditoria inteligente** para detecção de anomalias na rede
-
----
-
-# 📈 Roadmap
-
-- Implementar **rede P2P entre instituições**
-- Implementar **identidade descentralizada (DID)**
-- Criar **API pública de verificação de certificados**
-- Desenvolver **carteira digital de certificados para alunos**
-
----
-
-# 👨‍💻 Autor
-
-José Antonio Ramos da Silva  
-
-Estudante de Engenharia da Computação  
-
-Interesses:
-
-- Blockchain
-- Inteligência Artificial
-- Segurança Digital
-- Sistemas Distribuídos
-
-GitHub:  
-https://github.com/JoseAntonioRx7
-
----
-
-# 📜 Licença
-
-MIT License
+GET /api/admin/audit-network
+Aciona o Oráculo de IA para analisar os últimos registros e gerar um relatório de segurança em tempo real.
