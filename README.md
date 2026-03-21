@@ -4,7 +4,7 @@
 ![status](https://img.shields.io/badge/status-em%20desenvolvimento-green)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 
-Uma infraestrutura de **blockchain privada para emissão e verificação de certificados acadêmicos**, desenvolvida em **Go (Golang)**.
+> Uma infraestrutura de **blockchain privada para emissão e verificação de certificados acadêmicos**, desenvolvida em **Go (Golang)**.
 
 O sistema registra certificados em uma cadeia de blocos **imutável**, utilizando **criptografia SHA-256 e assinaturas digitais**, com uma camada adicional de **Inteligência Artificial para auditoria e monitoramento da rede**.
 
