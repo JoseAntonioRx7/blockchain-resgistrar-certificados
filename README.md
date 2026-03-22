@@ -18,7 +18,7 @@ Projeto desenvolvido para aprofundar conhecimentos práticos em:
 
 ---
 
-# 🚀 Funcionalidades Implementadas
+# 🚀  Funcionalidades Implementadas
 
 - **Arquitetura Non-Custodial:** A infraestrutura não retém as chaves privadas. As instituições emissoras possuem total soberania sobre suas credenciais de assinatura.
 
