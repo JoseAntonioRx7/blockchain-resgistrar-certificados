@@ -59,7 +59,7 @@ Linguagem: Go (Golang)
 > REST API
 > RBAC (Role-Based Access Control) com JWT
 
-----------
+------------------
 
 📦 Estrutura do Projeto:
 
