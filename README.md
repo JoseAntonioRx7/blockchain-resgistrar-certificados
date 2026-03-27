@@ -16,7 +16,7 @@ Projeto desenvolvido para aprofundar conhecimentos práticos em:
 - Arquitetura Backend em Go
 - Integração de IA Generativa em Infraestrutura
 
---------------------------
+------------------------------
 
 # 🚀  Funcionalidades Implementadas
 
