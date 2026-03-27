@@ -1,4 +1,4 @@
-# 🔗 TTLedger – Blockchain Certificate Infrastructure
+# 🔗 TBblockchain – Blockchain Certificate Infrastructure
 
 ![go](https://img.shields.io/badge/go-golang-blue)
 ![status](https://img.shields.io/badge/status-em%20desenvolvimento-green)
