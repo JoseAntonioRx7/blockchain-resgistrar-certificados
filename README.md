@@ -104,3 +104,15 @@ https://github.com/JoseAntonioRx7
 
 📜 Licença
 MIT License
+```
+
+<img width="1919" height="812" alt="Captura de tela 2026-04-01 122525" src="https://github.com/user-attachments/assets/9cf6a49d-43de-4fa5-ae9b-990a78394204" />
+
+<img width="1919" height="904" alt="Captura de tela 2026-04-01 122705" src="https://github.com/user-attachments/assets/96bd06a4-72b7-4716-9ece-a8de7be2333c" />
+
+<img width="1583" height="503" alt="Captura de tela 2026-04-01 122803" src="https://github.com/user-attachments/assets/32724afb-71cf-4226-aeca-e1d67587fa64" />
+
+
+
+
+
